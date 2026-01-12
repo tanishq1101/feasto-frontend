@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Delivery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        #chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        #chat-messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .suggestion-chip {
+            transition: background-color 0.2s ease-in-out;
+        }
+        .suggestion-chip:hover {
+            background-color: #e2e8f0;
+        }
+        /* Improved text readability */
+        .message-bubble p {
+            line-height: 1.6;
+        }
+        .message-bubble ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+        .message-bubble li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="root"></div>
+
+    <div id="chatbot-container" class="fixed top-5 right-5 z-50">
+        <button id="chat-bubble" class="bg-orange-500 text-white rounded-full shadow-xl w-16 h-16 flex items-center justify-center focus:outline-none transform transition-transform duration-300 hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+                <path d="M7 2v20" />
+                <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3z" />
+            </svg>
+        </button>
+
+        <div id="chat-window" class="hidden absolute top-20 right-0 w-80 sm:w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col transform transition-all duration-300 origin-top-right scale-95 opacity-0">
+            <div class="bg-orange-500 p-4 text-white rounded-t-2xl flex justify-between items-center shadow-md">
+                <div class="flex items-center space-x-3">
+                    <span class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                        <img class="aspect-square h-full w-full" alt="Feasty Avatar" src="https://placehold.co/40x40/FFFFFF/F97316?text=F">
+                    </span>
+                    <div>
+                        <h3 class="font-bold text-lg">Savora</h3>
+                        <p class="text-xs text-orange-100">Your Food Assistant</p>
+                    </div>
+                </div>
+                <button id="close-chat" class="text-white hover:text-orange-200 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-gray-50">
+                <div class="flex justify-start mb-4">
+                    <div class="message-bubble bg-gray-200 text-gray-800 p-3 rounded-xl max-w-xs">
+                        <p>Hey there! I'm Savora. I can help you find restaurants, track your order, or answer questions about menu items. How can I help?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="suggestion-chips" class="p-2 bg-white border-t border-gray-200">
+                <div class="flex flex-wrap gap-2 justify-center">
+                    <button class="suggestion-chip bg-gray-100 text-sm text-gray-700 px-3 py-1.5 rounded-full" data-suggestion="Track my last order">Track my order</button>
+                    <button class="suggestion-chip bg-gray-100 text-sm text-gray-700 px-3 py-1.5 rounded-full" data-suggestion="Show me popular desserts">Top desserts</button>
+                    <button class="suggestion-chip bg-gray-100 text-sm text-gray-700 px-3 py-1.5 rounded-full" data-suggestion="What are some popular vegetarian options?">Vegetarian options</button>
+                </div>
+            </div>
+
+            <div class="p-3 bg-white border-t border-gray-200 rounded-b-2xl">
+                <form id="chat-form" class="flex items-center space-x-2">
+                    <input type="text" id="chat-input" placeholder="Ask me anything..." class="flex-1 w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-400" autocomplete="off">
+                    <button type="submit" class="bg-orange-500 text-white rounded-full p-3 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="/src/main.jsx"></script>
+
+    <script>
+        const chatBubble = document.getElementById('chat-bubble');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChat = document.getElementById('close-chat');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+        const suggestionChipsContainer = document.getElementById('suggestion-chips');
+
+        let chatHistory = [];
+
+        // --- UI Interaction Logic ---
+        chatBubble.addEventListener('click', () => {
+            chatWindow.classList.remove('hidden');
+            setTimeout(() => {
+                chatWindow.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        });
+
+        closeChat.addEventListener('click', () => {
+            chatWindow.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                chatWindow.classList.add('hidden');
+            }, 300);
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (message) {
+                sendMessage(message);
+                chatInput.value = '';
+            }
+        });
+
+        suggestionChipsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('suggestion-chip')) {
+                const message = e.target.dataset.suggestion;
+                sendMessage(message);
+            }
+        });
+
+        function sendMessage(message) {
+            addMessageToUI('user', message);
+            // Handle pre-defined/simple queries locally for speed and constraint adherence
+            if (handleLocalResponse(message)) {
+                return;
+            }
+            callGeminiAPI(message);
+        }
+
+        // NEW FUNCTION: Handle specific queries based on constraints and image context
+        function handleLocalResponse(query) {
+            const normalizedQuery = query.toLowerCase();
+            let response = null;
+
+            if (normalizedQuery.includes("track my order") || normalizedQuery.includes("order status")) {
+                response = "I can't check the live status of your order right now, but you can find detailed tracking information in the **'My Orders'** section of the app! 🛵";
+            } else if (normalizedQuery.includes("show me popular desserts") || normalizedQuery.includes("top desserts")) {
+                response = "The **Desserts** category is popular! While I don't see the specific items here, you can choose from our categories: **Deserts**, **Cake**, and many more on the menu page! 🍰";
+            }
+            
+            if (response) {
+                addMessageToUI('model', response);
+                chatHistory.push({ role: "user", parts: [{ text: query }] });
+                chatHistory.push({ role: "model", parts: [{ text: response }] });
+                return true;
+            }
+            return false;
+        }
+
+        function parseMarkdown(text) {
+            let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            const listItems = html.match(/^- (.*)/gm);
+            if (listItems) {
+                const listHtml = listItems.map(item => `<li>${item.substring(2)}</li>`).join('');
+                html = html.replace(/^- (.*)/gm, '');
+                html = `<ul>${listHtml}</ul>` + html;
+            }
+            return html.trim().replace(/\n/g, '<br>');
+        }
+
+        function addMessageToUI(sender, message) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `flex mb-4 ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `message-bubble p-3 rounded-xl max-w-xs ${sender === 'user' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-800'}`;
+            
+            const formattedMessage = (sender === 'model') ? parseMarkdown(message) : `<p>${message}</p>`;
+            messageBubble.innerHTML = formattedMessage;
+
+            messageWrapper.appendChild(messageBubble);
+            chatMessages.appendChild(messageWrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showLoadingIndicator() {
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.id = 'loading-indicator';
+            loadingIndicator.className = 'flex justify-start mb-4';
+            loadingIndicator.innerHTML = `
+                <div class="bg-gray-200 text-gray-800 p-3 rounded-xl max-w-xs flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
+                    <div class="w-2 h-2 bg-gray-500 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                    <div class="w-2 h-2 bg-gray-500 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                </div>
+            `;
+            chatMessages.appendChild(loadingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeLoadingIndicator() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+        }
+
+        // --- API Integration Logic ---
+        async function callGeminiAPI(userQuery) {
+            showLoadingIndicator();
+            suggestionChipsContainer.style.display = 'none';
+
+            // IMPORTANT: Replace with your actual API key
+            const apiKey = "AIzaSyBn_wJhIhXy-Yya3UMGYw8N0nXRwVP5P3s"; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const systemPrompt = `You are "Savora", a cheerful and helpful chatbot for a food delivery app.
+                - Your goal is to assist users with their food-related queries for the restaurant **Idea Inn**.
+                - **KEEP YOUR ANSWERS SHORT AND CONCISE.** Be brief and to the point.
+                - **FORMAT YOUR ANSWERS CLEARLY.** Use Markdown for lists (using a hyphen and a space, e.g., "- Item 1") and for bolding text (using double asterisks, e.g., "**Important**") to highlight key information like restaurant names, offers, or menu items.
+                - **Menu Knowledge (Idea Inn):**
+                    - **Categories:** Salad, Rolls, Deserts, Sandwich, Cake, Pure Veg, Pasta, Noodles.
+                    - **Top Dishes:**
+                        - Greek salad: $12
+                        - Veg salad: $18
+                        - Clover salad: $16
+                        - Chicken salad: $24
+                - If providing a list of restaurants or menu items, present it as a simple, easy-to-read list.
+                - **ORDER TRACKING CONSTRAINT:** If asked to track an order, you MUST respond with: "I can't check the live status of your order right now, but you can find detailed tracking information in the 'My Orders' section of the app!" (This specific response is handled locally for speed but should be your guide).
+                - Use Google Search grounding to find real-time information about other restaurants, external menu items, opening hours, and ratings.
+                - If a user reports a problem, respond with empathy and guide them to customer support.
+                - Use emojis where appropriate. 🍔🍕😊
+                - Do not make up information you don't know.`;
+
+            chatHistory.push({
+                role: "user",
+                parts: [{ text: userQuery }]
+            });
+
+            const payload = {
+                contents: chatHistory,
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+                const result = await response.json();
+                removeLoadingIndicator();
+
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const botResponse = candidate.content.parts[0].text;
+                    addMessageToUI('model', botResponse);
+                    chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+                } else {
+                    addMessageToUI('model', "I'm not sure how to respond to that. Could you try asking in a different way?");
+                }
+
+            } catch (error) {
+                console.error("Gemini API call failed:", error);
+                removeLoadingIndicator();
+                addMessageToUI('model', "Oh no! 😥 I'm having some trouble connecting right now. Please try again in a moment.");
+            }
+        }
+    </script>
+</body>
+</html>

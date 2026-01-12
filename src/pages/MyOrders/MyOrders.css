@@ -1,0 +1,210 @@
+/* ===== My Orders Container ===== */
+.my-orders {
+  margin: 40px auto;
+  max-width: 900px;
+  font-family: "Poppins", "Segoe UI", Roboto, sans-serif;
+  color: #222;
+  padding: 0 15px;
+  background-color: #f9f9f9;
+}
+
+/* ===== Heading ===== */
+.my-orders h2 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 30px;
+  position: relative;
+  display: inline-block;
+}
+
+.my-orders h2::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #0077b6, #00b4d8);
+  border-radius: 10px;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+.my-orders h2:hover::after {
+  width: 100px;
+}
+
+/* ===== Orders List ===== */
+.orders-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ===== Single Order Card ===== */
+.order-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-left: 5px solid #0077b6;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+}
+
+.order-card p {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.order-card p b {
+  font-weight: 600;
+  color: #111;
+}
+
+.order-card p span {
+  font-weight: 500;
+  color: #333;
+}
+
+/* ===== Status Tags ===== */
+.status-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.status-pending {
+  background-color: #fbbf24; /* yellow */
+}
+
+.status-out {
+  background-color: #f97316; /* orange */
+}
+
+.status-delivered {
+  background-color: #22c55e; /* green */
+}
+
+.status-cod {
+  background-color: #16a34a; /* dark green */
+}
+
+.status-paid {
+  background-color: #0284c7; /* blue */
+}
+
+/* ===== Items Styling ===== */
+.items-list span {
+  background-color: #e0f2fe;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #0369a1;
+  font-weight: 500;
+}
+
+/* ===== Address & Amount ===== */
+.address {
+  font-size: 13px;
+  color: #555;
+}
+
+.amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+}
+
+/* ===== Buttons ===== */
+.track-order,
+.delete-order {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.track-order {
+  background: #0077b6;
+  color: #fff;
+}
+
+.track-order:hover {
+  background: #005f8f;
+}
+
+.delete-order {
+  background-color: #dc2626;
+  color: #fff;
+}
+
+.delete-order:hover {
+  background-color: #b91c1c;
+}
+
+.order-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ===== Error / No Orders Message ===== */
+.my-orders.error,
+.my-orders > div {
+  text-align: center;
+  font-weight: 500;
+  color: #d32f2f;
+  margin-top: 40px;
+  font-size: 16px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .my-orders h2 {
+    font-size: 24px;
+  }
+
+  .order-card {
+    padding: 15px;
+  }
+
+  .order-card p {
+    font-size: 13px;
+  }
+
+  .items-list span {
+    font-size: 11px;
+  }
+
+  .status-tag {
+    font-size: 11px;
+    padding: 3px 7px;
+  }
+
+  .track-order,
+  .delete-order {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}

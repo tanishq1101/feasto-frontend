@@ -1,0 +1,230 @@
+/* Base container for the whole checkout page */
+.place-order {
+  display: flex;
+  
+  gap: 50px;
+  padding: 50px 10%;
+  font-family: "Poppins", sans-serif;
+  align-items: flex-start;
+  min-height: calc(100vh - 200px); 
+}
+
+/* Form structure */
+.place-order form {
+  display: flex;
+  width: 100%;
+  gap: 50px;
+  /* Align items to the top of the form */
+  align-items: flex-start;
+}
+
+/* ---------------------------------------------------- */
+/* Left side: Delivery Information */
+/* ---------------------------------------------------- */
+.place-order-left {
+
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; 
+  padding: 0; 
+}
+
+/* Delivery Information title */
+.place-order-left .title {
+  font-size: 28px; 
+  font-weight: 700;
+  color: #000; 
+  margin-bottom: 5px; 
+  text-align: left;
+}
+
+/* Container for all inputs */
+.delivery-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* For First/Last Name, City/State, etc. */
+.multi-fields {
+  display: flex;
+  gap: 15px;
+}
+
+.place-order-left input {
+  width: 100%;
+  padding: 12px 15px;
+  /* Thin, light border as seen in the image */
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  outline: none;
+  font-size: 15px;
+  /* Subtle gray placeholder text */
+  color: #333;
+}
+
+.place-order-left input::placeholder {
+  color: #a0a0a0;
+  font-weight: 400;
+}
+
+
+/* ---------------------------------------------------- */
+/* Right side: Cart Totals */
+/* ---------------------------------------------------- */
+.place-order-right {
+  /* Give the cart totals section less space */
+  flex: 1;
+  /* Remove border, padding, and box-shadow for a clean, borderless look */
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.cart-total {
+  /* Apply some padding/margin to match the visual spacing */
+  padding-right: 20px;
+}
+
+.cart-total h2 {
+  font-size: 28px; /* Match the Delivery Information title size */
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 25px; /* More space before the totals start */
+}
+
+/* Style for each line item (Subtotal, Delivery Fee, Total) */
+.cart-total-details {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0; /* Increase vertical spacing */
+  font-size: 16px;
+  color: #333;
+}
+
+/* The price value on the right */
+.cart-total-details p:last-child {
+  font-weight: 600; /* Slightly bolder for the price */
+  color: #000;
+}
+
+/* Bold for the 'Total' label and price */
+.cart-total-details b {
+  font-weight: 700;
+}
+.cod-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px;
+  background-color: #444; /* dark gray */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.cod-btn:hover {
+  background-color: #222;
+}
+
+/* Separator lines */
+.cart-total hr {
+  border: none;
+  /* Use a lighter, thinner line */
+  border-top: 1px solid #f0f0f0;
+  margin: 15px 0; /* Increase margin for space */
+}
+
+/* Total line styling */
+.cart-total-details.total {
+  margin-top: 25px; /* Extra space above the final total */
+  font-size: 20px; /* Larger font for the total line */
+  font-weight: 700;
+  color: #000;
+}
+
+/* Proceed to payment button */
+.cart-total button {
+  width: 100%;
+  /* Match the burnt orange color from the image */
+  background-color: #f26b4c;
+  color: white;
+  border: none;
+  padding: 14px;
+  font-size: 16px;
+  /* Slightly rounded corners */
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 30px; /* More space above the button */
+  font-weight: 600;
+  /* Add a subtle box-shadow for depth */
+  box-shadow: 0 4px 6px rgba(242, 107, 76, 0.3);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.cart-total button:hover {
+  /* Darken color slightly on hover */
+  background-color: #e25f3f;
+  box-shadow: 0 6px 8px rgba(242, 107, 76, 0.4);
+}
+
+/* ---------------------------------------------------- */
+/* Responsive for smaller screens */
+/* ---------------------------------------------------- */
+@media (max-width: 900px) {
+  .place-order {
+    padding: 30px 5%; /* Reduce overall padding */
+  }
+
+  .place-order form {
+    /* Stack elements vertically */
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .place-order-left,
+  .place-order-right {
+    flex: 1; /* Both take full width */
+    width: 100%;
+  }
+
+  .place-order-right {
+    padding-right: 0;
+  }
+}
+
+/* You might not need these payment-options styles if they are on a separate page,
+   but keeping them structured if they are reused */
+.payment-options {
+  text-align: center;
+  padding: 50px;
+}
+
+.payment-options h2 {
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+.payment-options button {
+  display: block;
+  margin: 10px auto;
+  padding: 12px 25px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.payment-options button:first-child {
+  background: #f26b4c;
+  color: white;
+}
+
+.payment-options button:last-child {
+  background: #222;
+  color: white;
+}
