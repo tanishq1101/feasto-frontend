@@ -18,9 +18,14 @@ export const StoreContextProvider = (props) => {
 
   const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
+  const getSessionToken = async () => {
+    const token = await getToken({ skipCache: true });
+    return token || (await getToken());
+  };
+
   // Helper to get auth headers for API calls
   const authHeaders = async () => {
-    const token = await getToken();
+    const token = await getSessionToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
@@ -99,15 +104,19 @@ export const StoreContextProvider = (props) => {
   const loadCartData = async () => {
     if (!isSignedIn) return;
     try {
+      const headers = await authHeaders();
+      if (!headers.Authorization) return;
       const res = await axios.get(`${url}/api/cart/get`, {
-        headers: await authHeaders(),
+        headers,
       });
       if (res.data.cartData) {
         setCartItems(res.data.cartData);
         localStorage.setItem("cartItems", JSON.stringify(res.data.cartData));
       }
     } catch (err) {
-      console.error("Error loading cart:", err.message);
+      if (err.response?.status !== 401) {
+        console.error("Error loading cart:", err.message);
+      }
     }
   };
 
@@ -115,14 +124,17 @@ export const StoreContextProvider = (props) => {
   const syncUserToBackend = async () => {
     if (!isSignedIn) return;
     try {
-      const token = await getToken();
+      const token = await getSessionToken();
+      if (!token) return;
       // The backend will auto-upsert via the auth middleware on any protected call
       // But we also explicitly sync with user data on login
       await axios.get(`${url}/api/user/verify`, {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (err) {
-      console.error("Error syncing user:", err.message);
+      if (err.response?.status !== 401) {
+        console.error("Error syncing user:", err.message);
+      }
     }
   };
 
