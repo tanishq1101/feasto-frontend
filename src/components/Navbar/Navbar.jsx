@@ -3,22 +3,24 @@ import "./Navbar.css";
 import { assets } from "../../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import { StoreContext } from "../../context/StoreContext";
+import { useClerk, useUser } from "@clerk/clerk-react";
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState("home");
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const { getTotalCartAmount, token, setToken, food_list } =
-    useContext(StoreContext);
+  const { getTotalCartAmount, food_list } = useContext(StoreContext);
   const navigate = useNavigate();
 
+  // Clerk hooks
+  const { signOut } = useClerk();
+  const { isSignedIn, user } = useUser();
+
   const logout = () => {
-    localStorage.removeItem("token");
-    setToken("");
-    navigate("/");
+    signOut(() => navigate("/"));
   };
 
-  // filter matching food items
+  // Filter matching food items
   const filteredFoods = food_list.filter((food) =>
     food.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -86,28 +88,24 @@ const Navbar = ({ setShowLogin }) => {
               />
               {searchTerm && (
                 <ul className="search-results">
-  {filteredFoods.length > 0 ? (
-    filteredFoods.map((food) => (
-      <li
-  key={food._id}
-  onClick={() => {
-    const el = document.getElementById(`food-${food._id}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-    setShowSearch(false);
-    setSearchTerm("");
-  }}
->
-  {food.name}
-</li>
-
-    ))
-  ) : (
-    <li>No items found</li>
-  )}
-</ul>
-
+                  {filteredFoods.length > 0 ? (
+                    filteredFoods.map((food) => (
+                      <li
+                        key={food.id}
+                        onClick={() => {
+                          const el = document.getElementById(`food-${food.id}`);
+                          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+                          setShowSearch(false);
+                          setSearchTerm("");
+                        }}
+                      >
+                        {food.name}
+                      </li>
+                    ))
+                  ) : (
+                    <li>No items found</li>
+                  )}
+                </ul>
               )}
             </div>
           )}
@@ -120,11 +118,15 @@ const Navbar = ({ setShowLogin }) => {
           <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
         </div>
 
-        {!token ? (
+        {!isSignedIn ? (
           <button onClick={() => setShowLogin(true)}>sign in</button>
         ) : (
           <div className="navbar-profile">
-            <img src={assets.profile_icon} alt="" />
+            <img
+              src={user?.imageUrl || assets.profile_icon}
+              alt={user?.fullName || "profile"}
+              style={{ borderRadius: "50%", width: "36px", height: "36px", objectFit: "cover" }}
+            />
             <ul className="nav-profile-dropdown">
               <li onClick={() => navigate("/myorders")}>
                 <img src={assets.bag_icon} alt="" />

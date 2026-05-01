@@ -7,7 +7,7 @@ const PaymentSuccess = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const session_id = params.get("session_id");
-  const { url, token } = useContext(StoreContext);
+  const { url, authHeaders } = useContext(StoreContext);
 
   useEffect(() => {
     if (!session_id) {
@@ -20,7 +20,7 @@ const PaymentSuccess = () => {
         console.log("🔄 Saving order...");
         const res = await axios.get(`${url}/api/order/payment-success`, {
           params: { session_id },
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: await authHeaders(),
           withCredentials: true,
         });
 
@@ -38,7 +38,7 @@ const PaymentSuccess = () => {
     };
 
     confirmOrder();
-  }, [session_id, navigate, token, url]);
+  }, [session_id, navigate, authHeaders, url]);
 
   return (
     <div style={{ textAlign: "center", paddingTop: "50px" }}>

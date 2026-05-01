@@ -12,14 +12,17 @@ import MyOrders from "./pages/MyOrders/MyOrders.jsx";
 import PaymentSuccess from "./pages/payment-success.jsx";
 import PaymentFailed from "./pages/payment-failed.jsx";
 import RestaurantMenu from "./pages/restaurantMenu/restaurantMenu";
+import { useUser } from "@clerk/clerk-react";
 
 const App = () => {
   const [showLogin, setShowLogin] = useState(false);
-  const { loading, token } = useContext(StoreContext);
+  const { loading } = useContext(StoreContext);
+  const { isSignedIn } = useUser();
 
   if (loading) return null;
 
-  const showLoginPopup = showLogin && !token;
+  // Only show login popup if not already signed in
+  const showLoginPopup = showLogin && !isSignedIn;
 
   return (
     <>
@@ -36,7 +39,6 @@ const App = () => {
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-failed" element={<PaymentFailed />} />
           <Route path="/restaurant/:id" element={<RestaurantMenu />} />
-
         </Routes>
 
       </div>
@@ -46,4 +48,3 @@ const App = () => {
 };
 
 export default App;
-

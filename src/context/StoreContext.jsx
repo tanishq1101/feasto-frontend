@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { createContext, useState, useEffect } from "react";
+import { useAuth } from "@clerk/clerk-react";
 
 axios.defaults.withCredentials = true;
 
@@ -8,19 +9,19 @@ export const StoreContext = createContext(null);
 
 export const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
-  const [token, setToken] = useState(() => localStorage.getItem("token") || "");
   const [food_list, setFoodList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const url = import.meta.env.DEV
-  ? "http://localhost:4000"
-  : "https://fooddel-backend-rux6.onrender.com";
+  // Clerk auth hook — replaces custom JWT token management
+  const { getToken, isSignedIn, userId, isLoaded } = useAuth();
 
-  // Persist token in localStorage
-  useEffect(() => {
-    if (token) localStorage.setItem("token", token);
-    else localStorage.removeItem("token");
-  }, [token]);
+  const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+
+  // Helper to get auth headers for API calls
+  const authHeaders = async () => {
+    const token = await getToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   // ---------- Cart Functions ----------
   const addToCart = async (itemId) => {
@@ -30,12 +31,12 @@ export const StoreContextProvider = (props) => {
       return updatedCart;
     });
 
-    if (token) {
+    if (isSignedIn) {
       try {
         await axios.post(
           `${url}/api/cart/add`,
           { itemId },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: await authHeaders() }
         );
       } catch (err) {
         console.error("Error adding to cart:", err.message);
@@ -52,12 +53,12 @@ export const StoreContextProvider = (props) => {
       return updatedCart;
     });
 
-    if (token) {
+    if (isSignedIn) {
       try {
         await axios.post(
           `${url}/api/cart/remove`,
           { itemId },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: await authHeaders() }
         );
       } catch (err) {
         console.error("Error removing from cart:", err.message);
@@ -69,7 +70,7 @@ export const StoreContextProvider = (props) => {
     let totalAmount = 0;
     for (const item in cartItems) {
       if (cartItems[item] > 0) {
-        const itemInfo = food_list.find((p) => p._id === item);
+        const itemInfo = food_list.find((p) => p.id === item);
         if (itemInfo) totalAmount += itemInfo.price * cartItems[item];
       }
     }
@@ -86,44 +87,40 @@ export const StoreContextProvider = (props) => {
     }
   };
 
-const loadCartData = async (userToken) => {
-  if (!userToken) return;
-  try {
-    const res = await axios.get(`${url}/api/cart/get`, {
-      headers: { Authorization: `Bearer ${userToken}` }
-    });
-
-    if (res.data.cartData) {
-      setCartItems(res.data.cartData);
-      localStorage.setItem("cartItems", JSON.stringify(res.data.cartData));
-    }
-  } catch (err) {
-    if (err.response && err.response.status === 401) {
-      console.warn("Token invalid or expired — logging out.");
-      setToken("");
-      localStorage.removeItem("token");
-    } else {
+  const loadCartData = async () => {
+    if (!isSignedIn) return;
+    try {
+      const res = await axios.get(`${url}/api/cart/get`, {
+        headers: await authHeaders(),
+      });
+      if (res.data.cartData) {
+        setCartItems(res.data.cartData);
+        localStorage.setItem("cartItems", JSON.stringify(res.data.cartData));
+      }
+    } catch (err) {
       console.error("Error loading cart:", err.message);
     }
-  }
-};
+  };
 
-
-  const verifyToken = async (userToken) => {
-    if (!userToken) return false;
+  // Sync user to Postgres after Clerk sign-in
+  const syncUserToBackend = async () => {
+    if (!isSignedIn) return;
     try {
-      const res = await axios.get(`${url}/api/user/verify`, {
-        headers: { Authorization: `Bearer ${userToken}` },
+      const token = await getToken();
+      // The backend will auto-upsert via the auth middleware on any protected call
+      // But we also explicitly sync with user data on login
+      await axios.get(`${url}/api/user/verify`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      return res.data.success;
     } catch (err) {
-      console.warn("Token verification failed:", err.message);
-      return false;
+      console.error("Error syncing user:", err.message);
     }
   };
 
   // ---------- Initial Load ----------
   useEffect(() => {
+    if (!isLoaded) return; // Wait for Clerk to finish loading
+
     async function initialize() {
       try {
         await fetchFoodList();
@@ -132,19 +129,9 @@ const loadCartData = async (userToken) => {
         const savedCart = localStorage.getItem("cartItems");
         if (savedCart) setCartItems(JSON.parse(savedCart));
 
-        const storedToken = localStorage.getItem("token");
-        if (storedToken) {
-          console.log("Restored token:", storedToken);
-          const valid = await verifyToken(storedToken);
-          console.log("Verification result:", valid);
-
-          if (valid) {
-            setToken(storedToken);
-            await loadCartData(storedToken);
-          } else {
-            setToken("");
-            localStorage.removeItem("token");
-          }
+        if (isSignedIn) {
+          await syncUserToBackend();
+          await loadCartData();
         }
       } catch (err) {
         console.error("Initialization error:", err.message);
@@ -152,9 +139,10 @@ const loadCartData = async (userToken) => {
         setLoading(false);
       }
     }
+
     initialize();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded, isSignedIn]);
 
   // ---------- Context Value ----------
   const contextValue = {
@@ -165,12 +153,14 @@ const loadCartData = async (userToken) => {
     removeFromCart,
     getTotalCartAmount,
     url,
-    token,
-    setToken,
+    // Expose Clerk auth state instead of custom token
+    isSignedIn,
+    userId,
+    authHeaders,
     loading,
   };
 
-  if (loading) return null;
+  if (!isLoaded || loading) return null;
 
   return (
     <StoreContext.Provider value={contextValue}>

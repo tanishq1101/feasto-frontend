@@ -5,7 +5,7 @@ import axios from "axios";
 
 
 const PlaceOrder = () => {
-  const { getTotalCartAmount, cartItems, food_list, token, url } =
+  const { getTotalCartAmount, cartItems, food_list, authHeaders, url } =
     useContext(StoreContext);
 
 
@@ -31,11 +31,11 @@ const PlaceOrder = () => {
   e.preventDefault();
 
   const orderItems = food_list
-    .filter((item) => cartItems[item._id] > 0)
+    .filter((item) => cartItems[item.id] > 0)
     .map((item) => ({
       name: item.name,
       price: item.price,
-      quantity: cartItems[item._id],
+      quantity: cartItems[item.id],
     }));
 
   if (orderItems.length === 0) return alert("Cart is empty!");
@@ -47,7 +47,7 @@ const PlaceOrder = () => {
   };
 
   try {
-    const config = { headers: { Authorization: `Bearer ${token}` } };
+    const config = { headers: await authHeaders() };
     const response = await axios.post(`${url}/api/order/create-checkout-session`, orderData, config);
 
     window.location.href = response.data.url;  // ✅ redirect correctly
@@ -59,11 +59,11 @@ const PlaceOrder = () => {
 
   const handleCOD = async () => {
     const orderItems = food_list
-      .filter((item) => cartItems[item._id] > 0)
+      .filter((item) => cartItems[item.id] > 0)
       .map((item) => ({
         name: item.name,
         price: item.price,
-        quantity: cartItems[item._id],
+        quantity: cartItems[item.id],
       }));
 
     if (orderItems.length === 0) return alert("Cart is empty!");
@@ -75,7 +75,7 @@ const PlaceOrder = () => {
     };
 
     try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const config = { headers: await authHeaders() };
       const response = await axios.post(`${url}/api/order/place`, orderData, config);
 
       if (response.data.success) {

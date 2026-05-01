@@ -13,7 +13,7 @@ const itemEmoji = {
 };
 
 const MyOrders = () => {
-  const { url, token } = useContext(StoreContext);
+  const { url, authHeaders, isSignedIn } = useContext(StoreContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -23,7 +23,7 @@ const MyOrders = () => {
   const [deleting, setDeleting] = useState(null);
 
   const fetchOrders = useCallback(async () => {
-    if (!token) {
+    if (!isSignedIn) {
       setError("You must be logged in to view orders.");
       setLoading(false);
       return;
@@ -32,7 +32,7 @@ const MyOrders = () => {
     try {
       setError("");
       const res = await axios.get(`${url}/api/order/userorders`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: await authHeaders(),
       });
 
       if (res.data?.success) {
@@ -43,13 +43,13 @@ const MyOrders = () => {
       }
     } catch (err) {
       console.error("Error fetching orders:", err);
-      if (err.response?.status === 401) navigate("/login");
+      if (err.response?.status === 401) navigate("/");
       else setError("Error loading orders.");
       setOrders([]);
     } finally {
       setLoading(false);
     }
-  }, [url, token, navigate]);
+  }, [url, isSignedIn, authHeaders, navigate]);
 
   useEffect(() => {
     fetchOrders();
@@ -71,11 +71,11 @@ const MyOrders = () => {
     try {
       setDeleting(orderId);
       await axios.delete(`${url}/api/order/${orderId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: await authHeaders(),
       });
 
       // Remove deleted order locally
-      setOrders((prev) => prev.filter((o) => o._id !== orderId));
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
     } catch (err) {
       console.error("Error deleting order:", err);
       alert("Failed to delete order. Please try again.");
@@ -94,9 +94,9 @@ const MyOrders = () => {
       <h2>My Orders</h2>
       <div className="orders-container">
         {orders.map((order) => (
-          <div key={order._id} className="order-card">
+          <div key={order.id} className="order-card">
             <p>
-              <b>Order ID:</b> <span className="order-id">{order._id}</span>
+              <b>Order ID:</b> <span className="order-id">{order.id}</span>
             </p>
 
             <p>
@@ -156,10 +156,10 @@ const MyOrders = () => {
   {order.status === "Delivered" && (
     <button
       className="delete-order"
-      onClick={() => handleDeleteOrder(order._id)}
-      disabled={deleting === order._id}
+      onClick={() => handleDeleteOrder(order.id)}
+      disabled={deleting === order.id}
     >
-      {deleting === order._id ? "Deleting..." : "🗑 Delete"}
+      {deleting === order.id ? "Deleting..." : "🗑 Delete"}
     </button>
   )}
 </div>
