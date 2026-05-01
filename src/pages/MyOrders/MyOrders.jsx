@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import "./MyOrders.css";
 
 const itemEmoji = {
@@ -14,7 +14,6 @@ const itemEmoji = {
 
 const MyOrders = () => {
   const { url, authHeaders, isSignedIn } = useContext(StoreContext);
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [orders, setOrders] = useState([]);
@@ -31,9 +30,14 @@ const MyOrders = () => {
 
     try {
       setError("");
-      const res = await axios.get(`${url}/api/order/userorders`, {
-        headers: await authHeaders(),
-      });
+      const headers = await authHeaders();
+      if (!headers.Authorization) {
+        setError("Session not ready. Please try again.");
+        setOrders([]);
+        return;
+      }
+
+      const res = await axios.get(`${url}/api/order/userorders`, { headers });
 
       if (res.data?.success) {
         setOrders(res.data.orders);
@@ -43,13 +47,16 @@ const MyOrders = () => {
       }
     } catch (err) {
       console.error("Error fetching orders:", err);
-      if (err.response?.status === 401) navigate("/");
-      else setError("Error loading orders.");
+      if (err.response?.status === 401) {
+        setError("Session expired. Please sign in again.");
+      } else {
+        setError("Error loading orders.");
+      }
       setOrders([]);
     } finally {
       setLoading(false);
     }
-  }, [url, isSignedIn, authHeaders, navigate]);
+  }, [url, isSignedIn, authHeaders]);
 
   useEffect(() => {
     fetchOrders();
