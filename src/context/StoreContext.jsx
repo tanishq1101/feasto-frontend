@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { createContext, useState, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
+import { getEntityId } from "../utils/entityId";
 
 axios.defaults.withCredentials = true;
 
@@ -70,7 +71,7 @@ export const StoreContextProvider = (props) => {
     let totalAmount = 0;
     for (const item in cartItems) {
       if (cartItems[item] > 0) {
-        const itemInfo = food_list.find((p) => p.id === item);
+        const itemInfo = food_list.find((p) => String(getEntityId(p)) === String(item));
         if (itemInfo) totalAmount += itemInfo.price * cartItems[item];
       }
     }
@@ -81,7 +82,15 @@ export const StoreContextProvider = (props) => {
   const fetchFoodList = async () => {
     try {
       const res = await axios.get(`${url}/api/food/list`);
-      setFoodList(res.data.data);
+      const normalized = (res.data.data || []).map((item) => {
+        const entityId = getEntityId(item);
+        return {
+          ...item,
+          id: entityId,
+          _id: entityId,
+        };
+      });
+      setFoodList(normalized);
     } catch (err) {
       console.error("Error loading food list:", err.message);
     }

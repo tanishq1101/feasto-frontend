@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import "./restaurantMenu.css";
 import { StoreContext } from "../../context/StoreContext";
 import FoodItem from "../../components/FoodItem/FoodItem";
+import { getEntityId } from "../../utils/entityId";
 
 const RestaurantMenu = () => {
   const { id } = useParams();
@@ -110,8 +111,8 @@ const RestaurantMenu = () => {
       <div className="menu-grid">
         {filteredFoods.map((item) => (
           <FoodItem
-            key={item._id}
-            id={item._id}
+            key={getEntityId(item)}
+            id={getEntityId(item)}
             name={item.name}
             description={item.description}
             price={item.price}

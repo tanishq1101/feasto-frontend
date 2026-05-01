@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import "./PlaceOrder.css";
 import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
+import { getEntityId } from "../../utils/entityId";
 
 
 const PlaceOrder = () => {
@@ -31,12 +32,18 @@ const PlaceOrder = () => {
   e.preventDefault();
 
   const orderItems = food_list
-    .filter((item) => cartItems[item.id] > 0)
-    .map((item) => ({
-      name: item.name,
-      price: item.price,
-      quantity: cartItems[item.id],
-    }));
+    .filter((item) => {
+      const itemId = getEntityId(item);
+      return itemId && cartItems[itemId] > 0;
+    })
+    .map((item) => {
+      const itemId = getEntityId(item);
+      return {
+        name: item.name,
+        price: item.price,
+        quantity: cartItems[itemId],
+      };
+    });
 
   if (orderItems.length === 0) return alert("Cart is empty!");
 
@@ -59,12 +66,18 @@ const PlaceOrder = () => {
 
   const handleCOD = async () => {
     const orderItems = food_list
-      .filter((item) => cartItems[item.id] > 0)
-      .map((item) => ({
-        name: item.name,
-        price: item.price,
-        quantity: cartItems[item.id],
-      }));
+      .filter((item) => {
+        const itemId = getEntityId(item);
+        return itemId && cartItems[itemId] > 0;
+      })
+      .map((item) => {
+        const itemId = getEntityId(item);
+        return {
+          name: item.name,
+          price: item.price,
+          quantity: cartItems[itemId],
+        };
+      });
 
     if (orderItems.length === 0) return alert("Cart is empty!");
 

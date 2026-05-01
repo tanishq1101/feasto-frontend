@@ -5,6 +5,7 @@ import "./restaurantList.css";
 import { getUserCity } from "../../utils/getUserCity";
 import { indianCities } from "../../data/cities";
 import { StoreContext } from "../../context/StoreContext";
+import { getEntityId } from "../../utils/entityId";
 
 const RestaurantList = () => {
   const { url } = useContext(StoreContext);
@@ -104,11 +105,20 @@ const RestaurantList = () => {
       <div className="restaurant-grid">
         {filteredRestaurants.map((r) => (
           <div
-            key={r._id}
+            key={getEntityId(r)}
             className="restaurant-card"
-            onClick={() => navigate(`/restaurant/${r._id}`)}
+            onClick={() => navigate(`/restaurant/${getEntityId(r)}`)}
           >
-            <img src={r.image || "/default_restaurant.png"} alt={r.name} />
+            <img
+              src={
+                r.image?.startsWith("http")
+                  ? r.image
+                  : r.image
+                  ? `${url}/images/${r.image}`
+                  : "/default_restaurant.png"
+              }
+              alt={r.name}
+            />
             <h3>{r.name}</h3>
             <p>{r.cuisine} • {r.city}</p>
             <p className="rating">⭐ {r.rating}</p>

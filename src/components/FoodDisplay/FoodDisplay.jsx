@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import "./FoodDisplay.css";
 import { StoreContext } from "../../context/StoreContext";
 import FoodItem from "../FoodItem/FoodItem";
+import { getEntityId } from "../../utils/entityId";
 
 const FoodDisplay = ({ category = "All", showAll = false }) => {
   const { food_list } = useContext(StoreContext);
@@ -24,9 +25,9 @@ const FoodDisplay = ({ category = "All", showAll = false }) => {
       <h2>Top dishes</h2>
       <div className="food-display-list">
         {displayList.map((item) => (
-          <div id={`food-${item._id}`} key={item._id}>
+          <div id={`food-${getEntityId(item)}`} key={getEntityId(item)}>
             <FoodItem
-              id={item._id}
+              id={getEntityId(item)}
               name={item.name}
               description={item.description}
               price={item.price}

@@ -4,6 +4,7 @@ import { assets } from "../../assets/assets";
 import { Link, useNavigate } from "react-router-dom";
 import { StoreContext } from "../../context/StoreContext";
 import { useClerk, useUser } from "@clerk/clerk-react";
+import { getEntityId } from "../../utils/entityId";
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState("home");
@@ -91,9 +92,9 @@ const Navbar = ({ setShowLogin }) => {
                   {filteredFoods.length > 0 ? (
                     filteredFoods.map((food) => (
                       <li
-                        key={food.id}
+                        key={getEntityId(food)}
                         onClick={() => {
-                          const el = document.getElementById(`food-${food.id}`);
+                          const el = document.getElementById(`food-${getEntityId(food)}`);
                           if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
                           setShowSearch(false);
                           setSearchTerm("");
