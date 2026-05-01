@@ -10,6 +10,7 @@ const LoginPopup = ({ setShowLogin }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <SignIn
+          routing="hash"
           appearance={{
             elements: {
               rootBox: "clerk-root",
