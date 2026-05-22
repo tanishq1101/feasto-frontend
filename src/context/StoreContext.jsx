@@ -1,6 +1,7 @@
 import axios from "axios";
-import React, { createContext, useState, useEffect } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { backendUrl } from "../config/api";
 import { getEntityId } from "../utils/entityId";
 
 axios.defaults.withCredentials = true;
@@ -15,19 +16,20 @@ export const StoreContextProvider = (props) => {
 
   // Clerk auth hook — replaces custom JWT token management
   const { getToken, isSignedIn, userId, isLoaded } = useAuth();
+  const { user, isLoaded: isUserLoaded } = useUser();
 
-  const url = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const url = backendUrl;
 
-  const getSessionToken = async () => {
+  const getSessionToken = useCallback(async () => {
     const token = await getToken({ skipCache: true });
     return token || (await getToken());
-  };
+  }, [getToken]);
 
   // Helper to get auth headers for API calls
-  const authHeaders = async () => {
+  const authHeaders = useCallback(async () => {
     const token = await getSessionToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  }, [getSessionToken]);
 
   // ---------- Cart Functions ----------
   const addToCart = async (itemId) => {
@@ -122,15 +124,21 @@ export const StoreContextProvider = (props) => {
 
   // Sync user to Postgres after Clerk sign-in
   const syncUserToBackend = async () => {
-    if (!isSignedIn) return;
+    if (!isSignedIn || !user) return;
     try {
       const token = await getSessionToken();
       if (!token) return;
-      // The backend will auto-upsert via the auth middleware on any protected call
-      // But we also explicitly sync with user data on login
-      await axios.get(`${url}/api/user/verify`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(
+        `${url}/api/user/sync`,
+        {
+          id: user.id,
+          email: user.primaryEmailAddress?.emailAddress,
+          name: user.fullName,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
     } catch (err) {
       if (err.response?.status !== 401) {
         console.error("Error syncing user:", err.message);
@@ -140,7 +148,7 @@ export const StoreContextProvider = (props) => {
 
   // ---------- Initial Load ----------
   useEffect(() => {
-    if (!isLoaded) return; // Wait for Clerk to finish loading
+    if (!isLoaded || !isUserLoaded) return; // Wait for Clerk to finish loading
 
     async function initialize() {
       try {
@@ -163,7 +171,14 @@ export const StoreContextProvider = (props) => {
 
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, isSignedIn]);
+  }, [
+    isLoaded,
+    isUserLoaded,
+    isSignedIn,
+    userId,
+    user?.primaryEmailAddress?.emailAddress,
+    user?.fullName,
+  ]);
 
   // ---------- Context Value ----------
   const contextValue = {
@@ -181,7 +196,7 @@ export const StoreContextProvider = (props) => {
     loading,
   };
 
-  if (!isLoaded || loading) return null;
+  if (!isLoaded || !isUserLoaded || loading) return null;
 
   return (
     <StoreContext.Provider value={contextValue}>
