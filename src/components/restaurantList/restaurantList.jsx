@@ -13,9 +13,34 @@ const RestaurantList = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
   const [city, setCity] = useState("Detecting...");
+  const [heading, setHeading] = useState("Restaurants near you");
   const [search, setSearch] = useState("");
 
   const navigate = useNavigate();
+
+  const applyRestaurants = (items, title) => {
+    setRestaurants(items);
+    setFilteredRestaurants(items);
+    setHeading(title);
+  };
+
+  const loadAllRestaurants = async () => {
+    const res = await axios.get(`${url}/api/restaurant/all`);
+    const allRestaurants = res.data.restaurants || [];
+    applyRestaurants(allRestaurants, "Popular restaurants");
+  };
+
+  const loadRestaurantsByCity = async (selectedCity) => {
+    const res = await axios.get(`${url}/api/restaurant/city/${selectedCity}`);
+    const cityRestaurants = res.data.restaurants || [];
+
+    if (cityRestaurants.length > 0) {
+      applyRestaurants(cityRestaurants, `Restaurants in ${selectedCity}`);
+      return;
+    }
+
+    await loadAllRestaurants();
+  };
 
   // ✅ Initial load: detect city & load restaurants
   useEffect(() => {
@@ -25,13 +50,10 @@ const RestaurantList = () => {
       setCity(selectedCity);
 
       try {
-        const res = await axios.get(`${url}/api/restaurant/city/${selectedCity}`);
-        if (res.data.success) {
-          setRestaurants(res.data.restaurants);
-          setFilteredRestaurants(res.data.restaurants);
-        }
+        await loadRestaurantsByCity(selectedCity);
       } catch (err) {
         console.error("Restaurant load error:", err);
+        applyRestaurants([], "Popular restaurants");
       }
     };
 
@@ -43,13 +65,10 @@ const RestaurantList = () => {
     if (!city) return;
     const loadByCity = async () => {
       try {
-        const res = await axios.get(`${url}/api/restaurant/city/${city}`);
-        if (res.data.success) {
-          setRestaurants(res.data.restaurants);
-          setFilteredRestaurants(res.data.restaurants);
-        }
+        await loadRestaurantsByCity(city);
       } catch (err) {
         console.log("City change fetch error:", err);
+        await loadAllRestaurants();
       }
     };
     loadByCity();
@@ -67,7 +86,7 @@ const RestaurantList = () => {
   return (
     <div className="restaurant-list">
       <div className="restaurant-header">
-        <h2>Restaurants in <span className="highlight">{city}</span></h2>
+        <h2>{heading}</h2>
 
         {/* ✅ Search Bar */}
         <div className="search-container">
