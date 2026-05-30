@@ -25,3 +25,137 @@ a{
     opacity: 1;
   }
 }
+
+/* ===== DARK MODE OVERRIDES ===== */
+body.dark-theme {
+  background-color: #121214;
+  color: #f0f2f8;
+  --theme-toggle-color: #f0f2f8;
+}
+
+body.dark-theme .navbar {
+  background-color: #121214;
+  border-bottom: 1px solid #1f2029;
+}
+
+body.dark-theme .navbar-menu {
+  color: #b3b9d1;
+}
+
+body.dark-theme .navbar-menu li Link,
+body.dark-theme .navbar-menu li a {
+  color: #b3b9d1;
+}
+
+body.dark-theme .navbar-menu li .active {
+  color: #ff6b35;
+  border-bottom: 2px solid #ff6b35;
+}
+
+body.dark-theme .explore-menu h1,
+body.dark-theme .explore-menu-text,
+body.dark-theme .food-display h2,
+body.dark-theme .food-item-name-rating p,
+body.dark-theme .food-item-desc {
+  color: #f0f2f8;
+}
+
+body.dark-theme .food-item {
+  background-color: #1a1d27;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-theme .food-item-info {
+  background-color: #1a1d27;
+}
+
+body.dark-theme .explore-menu-list-item p {
+  color: #b3b9d1;
+}
+
+body.dark-theme .footer {
+  background-color: #1a1d27;
+  color: #8b92a9;
+}
+
+body.dark-theme .cart-items-title {
+  color: #8b92a9;
+}
+
+body.dark-theme .cart-items-item {
+  color: #f0f2f8;
+}
+
+body.dark-theme .cart-total h2,
+body.dark-theme .cart-total-details {
+  color: #f0f2f8;
+}
+
+body.dark-theme .cart-promocode p {
+  color: #8b92a9;
+}
+
+body.dark-theme .place-order-left h2,
+body.dark-theme .place-order-left .title {
+  color: #f0f2f8;
+}
+
+body.dark-theme .place-order input {
+  background-color: #1a1d27;
+  border: 1px solid #252838;
+  color: #f0f2f8;
+}
+
+body.dark-theme .my-orders h2,
+body.dark-theme .order-card {
+  background-color: #1a1d27;
+  border: 1px solid #252838;
+  color: #f0f2f8;
+}
+
+body.dark-theme .restaurant-list h2,
+body.dark-theme .restaurant-card {
+  background-color: #1a1d27;
+  color: #f0f2f8;
+}
+
+body.dark-theme .restaurant-menu-page {
+  color: #f0f2f8;
+}
+
+body.dark-theme .tab-chip {
+  background-color: #252838;
+  color: #b3b9d1;
+}
+
+body.dark-theme .review-card {
+  background-color: #1a1d27;
+  border: 1px solid #252838;
+}
+
+body.dark-theme .navbar-search-box input {
+  background-color: #1a1d27;
+  border: 1px solid #252838;
+  color: #f0f2f8;
+}
+
+body.dark-theme .search-results {
+  background: #1a1d27;
+  border: 1px solid #252838;
+  color: #f0f2f8;
+}
+
+body.dark-theme .search-results li:hover {
+  background-color: #252838;
+}
+
+body.dark-theme .nav-profile-dropdown {
+  background-color: #1a1d27 !important;
+  border: 1px solid #252838 !important;
+  color: #f0f2f8 !important;
+  outline: 2px solid #121214 !important;
+}
+
+body.dark-theme .nav-profile-dropdown li:hover {
+  color: #ff6b35;
+}

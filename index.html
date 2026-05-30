@@ -48,7 +48,7 @@
 
     <div id="root"></div>
 
-    <div id="chatbot-container" class="fixed top-5 right-5 z-50">
+    <div id="chatbot-container" class="hidden fixed top-5 right-5 z-50">
         <button id="chat-bubble" class="bg-orange-500 text-white rounded-full shadow-xl w-16 h-16 flex items-center justify-center focus:outline-none transform transition-transform duration-300 hover:scale-110">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
@@ -102,7 +102,7 @@
     
     <script type="module" src="/src/main.jsx"></script>
 
-    <script>
+    <script type="module">
         const chatBubble = document.getElementById('chat-bubble');
         const chatWindow = document.getElementById('chat-window');
         const closeChat = document.getElementById('close-chat');
@@ -146,31 +146,7 @@
 
         function sendMessage(message) {
             addMessageToUI('user', message);
-            // Handle pre-defined/simple queries locally for speed and constraint adherence
-            if (handleLocalResponse(message)) {
-                return;
-            }
-            callGeminiAPI(message);
-        }
-
-        // NEW FUNCTION: Handle specific queries based on constraints and image context
-        function handleLocalResponse(query) {
-            const normalizedQuery = query.toLowerCase();
-            let response = null;
-
-            if (normalizedQuery.includes("track my order") || normalizedQuery.includes("order status")) {
-                response = "I can't check the live status of your order right now, but you can find detailed tracking information in the **'My Orders'** section of the app! 🛵";
-            } else if (normalizedQuery.includes("show me popular desserts") || normalizedQuery.includes("top desserts")) {
-                response = "The **Desserts** category is popular! While I don't see the specific items here, you can choose from our categories: **Deserts**, **Cake**, and many more on the menu page! 🍰";
-            }
-            
-            if (response) {
-                addMessageToUI('model', response);
-                chatHistory.push({ role: "user", parts: [{ text: query }] });
-                chatHistory.push({ role: "model", parts: [{ text: response }] });
-                return true;
-            }
-            return false;
+            callGroqAPI(message);
         }
 
         function parseMarkdown(text) {
@@ -191,7 +167,7 @@
             const messageBubble = document.createElement('div');
             messageBubble.className = `message-bubble p-3 rounded-xl max-w-xs ${sender === 'user' ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-800'}`;
             
-            const formattedMessage = (sender === 'model') ? parseMarkdown(message) : `<p>${message}</p>`;
+            const formattedMessage = (sender === 'model' || sender === 'assistant') ? parseMarkdown(message) : `<p>${message}</p>`;
             messageBubble.innerHTML = formattedMessage;
 
             messageWrapper.appendChild(messageBubble);
@@ -221,50 +197,114 @@
             }
         }
 
-        // --- API Integration Logic ---
-        async function callGeminiAPI(userQuery) {
+        // --- Groq API Integration with live Feasto website context ---
+        async function callGroqAPI(userQuery) {
             showLoadingIndicator();
-            suggestionChipsContainer.style.display = 'none';
+            if (suggestionChipsContainer) {
+                suggestionChipsContainer.style.display = 'none';
+            }
 
-            // IMPORTANT: Replace with your actual API key
-            const apiKey = "AIzaSyBn_wJhIhXy-Yya3UMGYw8N0nXRwVP5P3s"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const apiKey = import.meta.env.VITE_GROQ_API_KEY || "";
+            const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
 
-            const systemPrompt = `You are "Savora", a cheerful and helpful chatbot for a food delivery app.
-                - Your goal is to assist users with their food-related queries for the restaurant **Idea Inn**.
-                - **KEEP YOUR ANSWERS SHORT AND CONCISE.** Be brief and to the point.
-                - **FORMAT YOUR ANSWERS CLEARLY.** Use Markdown for lists (using a hyphen and a space, e.g., "- Item 1") and for bolding text (using double asterisks, e.g., "**Important**") to highlight key information like restaurant names, offers, or menu items.
-                - **Menu Knowledge (Idea Inn):**
-                    - **Categories:** Salad, Rolls, Deserts, Sandwich, Cake, Pure Veg, Pasta, Noodles.
-                    - **Top Dishes:**
-                        - Greek salad: $12
-                        - Veg salad: $18
-                        - Clover salad: $16
-                        - Chicken salad: $24
-                - If providing a list of restaurants or menu items, present it as a simple, easy-to-read list.
-                - **ORDER TRACKING CONSTRAINT:** If asked to track an order, you MUST respond with: "I can't check the live status of your order right now, but you can find detailed tracking information in the 'My Orders' section of the app!" (This specific response is handled locally for speed but should be your guide).
-                - Use Google Search grounding to find real-time information about other restaurants, external menu items, opening hours, and ratings.
-                - If a user reports a problem, respond with empathy and guide them to customer support.
-                - Use emojis where appropriate. 🍔🍕😊
-                - Do not make up information you don't know.`;
+            // 1. Get current website state if available
+            let state = { isSignedIn: false, cartItems: {}, food_list: [], orders: [] };
+            if (typeof window.getFeastoState === 'function') {
+                try {
+                    state = await window.getFeastoState();
+                } catch (e) {
+                    console.error("Failed to get Feasto state:", e);
+                }
+            }
 
-            chatHistory.push({
-                role: "user",
-                parts: [{ text: userQuery }]
+            // 2. Format cart items
+            let cartText = "Cart is empty.";
+            if (state.cartItems && Object.keys(state.cartItems).length > 0) {
+                const addedItems = [];
+                for (const itemId in state.cartItems) {
+                    const qty = state.cartItems[itemId];
+                    if (qty > 0) {
+                        const food = state.food_list.find(f => String(f.id || f._id) === String(itemId));
+                        if (food) {
+                            addedItems.push(`- **${food.name}** (Quantity: ${qty}, Price: $${food.price} each)`);
+                        }
+                    }
+                }
+                if (addedItems.length > 0) {
+                    cartText = addedItems.join("\n");
+                }
+            }
+
+            // 3. Format orders
+            let ordersText = "No orders found.";
+            if (state.orders && state.orders.length > 0) {
+                ordersText = state.orders.map(o => {
+                    const itemsStr = o.items?.map(i => `${i.name} x${i.quantity}`).join(", ");
+                    return `- **Order ID**: ${o.id}\n  - **Status**: ${o.status}\n  - **Amount**: $${o.amount}\n  - **Items**: ${itemsStr}\n  - **Payment**: ${o.payment ? "Paid (Card)" : "Cash on Delivery"}`;
+                }).join("\n");
+            }
+
+            // 4. Format menu (grouped by category to keep prompt within bounds)
+            let menuText = "No menu items available.";
+            if (state.food_list && state.food_list.length > 0) {
+                const categories = {};
+                state.food_list.forEach(f => {
+                    if (!categories[f.category]) categories[f.category] = [];
+                    categories[f.category].push(`${f.name} ($${f.price})`);
+                });
+                menuText = Object.entries(categories).map(([cat, items]) => {
+                    return `**${cat}**:\n${items.map(i => `  - ${i}`).join("\n")}`;
+                }).join("\n\n");
+            }
+
+            const systemPrompt = `You are "Savora", a cheerful, empathy-driven personal food assistant for Feasto, a food delivery app.
+You have real-time access to the user's cart, orders, and restaurant menu.
+
+## User Context:
+- **Logged In**: ${state.isSignedIn ? `Yes, as "${state.userName || "Customer"}"` : "No, user is not logged in."}
+- **Current Cart Items**:\n${cartText}
+- **Order History / Status**:\n${ordersText}
+
+## Available Menu at Feasto:\n${menuText}
+
+## Guidelines:
+1. **BE EXTREMELY BRIEF AND TO THE POINT**: Answer in 1-3 short sentences if possible. Never output long paragraphs.
+2. **USE FORMATTING**: Use bold text (**word**) for items, prices, order statuses, or important terms. Use simple bullet lists (- item) for lists.
+3. **ORDER LOOKUP / TRACKING**: If the user asks about order status, look at the Order History provided above. If an order exists, specify its ID and its exact **Status** (e.g. "Food Processing", "Out for Delivery", "Delivered"). If they are not logged in, ask them to sign in. If they have no orders, state so.
+4. **RECOMMENDATIONS**: Recommend specific items from the Menu above when asked. Match food preferences (vegetarian, desserts, etc.) to the menu.
+5. **CART INQUIRIES**: If asked what is in their cart, list their items and total price, or let them know it is empty.
+6. **EMPATHY & STYLE**: Use emojis (🍕🍔🍰🛵✨). Be friendly and cheerful.`;
+
+            // Prepare history in OpenAI format
+            const messages = [
+                { role: "system", content: systemPrompt }
+            ];
+
+            // Convert and add chatHistory
+            chatHistory.forEach(h => {
+                messages.push({
+                    role: h.role === "model" ? "assistant" : h.role,
+                    content: h.content
+                });
             });
 
+            // Add the new query
+            messages.push({ role: "user", content: userQuery });
+
             const payload = {
-                contents: chatHistory,
-                tools: [{ "google_search": {} }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
+                model: "llama-3.3-70b-versatile",
+                messages: messages,
+                temperature: 0.7,
+                max_tokens: 1024
             };
 
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
                     body: JSON.stringify(payload)
                 });
 
@@ -273,17 +313,17 @@
                 const result = await response.json();
                 removeLoadingIndicator();
 
-                const candidate = result.candidates?.[0];
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    const botResponse = candidate.content.parts[0].text;
+                const botResponse = result.choices?.[0]?.message?.content;
+                if (botResponse) {
                     addMessageToUI('model', botResponse);
-                    chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+                    chatHistory.push({ role: "user", content: userQuery });
+                    chatHistory.push({ role: "assistant", content: botResponse });
                 } else {
                     addMessageToUI('model', "I'm not sure how to respond to that. Could you try asking in a different way?");
                 }
 
             } catch (error) {
-                console.error("Gemini API call failed:", error);
+                console.error("Groq API call failed:", error);
                 removeLoadingIndicator();
                 addMessageToUI('model', "Oh no! 😥 I'm having some trouble connecting right now. Please try again in a moment.");
             }

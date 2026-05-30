@@ -21,8 +21,7 @@ export const StoreContextProvider = (props) => {
   const url = backendUrl;
 
   const getSessionToken = useCallback(async () => {
-    const token = await getToken({ skipCache: true });
-    return token || (await getToken());
+    return await getToken();
   }, [getToken]);
 
   // Helper to get auth headers for API calls
@@ -146,6 +145,32 @@ export const StoreContextProvider = (props) => {
     }
   };
 
+  // Expose state globally for the chatbot
+  useEffect(() => {
+    window.getFeastoState = async () => {
+      let orders = [];
+      if (isSignedIn) {
+        try {
+          const token = await getToken();
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          const res = await axios.get(`${url}/api/order/userorders`, { headers });
+          if (res.data?.success) {
+            orders = res.data.orders;
+          }
+        } catch (e) {
+          // ignore or log
+        }
+      }
+      return {
+        isSignedIn,
+        userName: user?.fullName || null,
+        cartItems,
+        food_list,
+        orders
+      };
+    };
+  }, [isSignedIn, user, cartItems, food_list, url, getToken]);
+
   // ---------- Initial Load ----------
   useEffect(() => {
     if (!isLoaded || !isUserLoaded) return; // Wait for Clerk to finish loading
@@ -159,8 +184,8 @@ export const StoreContextProvider = (props) => {
         if (savedCart) setCartItems(JSON.parse(savedCart));
 
         if (isSignedIn) {
-          await syncUserToBackend();
-          await loadCartData();
+          // Trigger sync and load cart data in background (do not block app loading)
+          syncUserToBackend().then(() => loadCartData());
         }
       } catch (err) {
         console.error("Initialization error:", err.message);

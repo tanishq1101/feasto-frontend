@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { StoreContext } from "./context/StoreContext";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
@@ -23,6 +23,13 @@ const App = () => {
 
   // Only show login popup if not already signed in
   const showLoginPopup = showLogin && !isSignedIn;
+
+  useEffect(() => {
+    const chatbot = document.getElementById("chatbot-container");
+    if (chatbot) {
+      chatbot.classList.remove("hidden");
+    }
+  }, []);
 
   return (
     <>

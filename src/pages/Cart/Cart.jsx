@@ -25,7 +25,7 @@ const Cart = () => {
 
         {food_list.map((item) => {
           const itemId = getEntityId(item);
-          if (!itemId || cartItems[itemId] <= 0) return null;
+          if (!itemId || !cartItems[itemId] || cartItems[itemId] <= 0) return null;
 
           return (
             <div key={itemId}>
