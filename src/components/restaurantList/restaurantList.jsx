@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./restaurantList.css";
@@ -24,23 +24,26 @@ const RestaurantList = () => {
     setHeading(title);
   };
 
-  const loadAllRestaurants = async () => {
+  const loadAllRestaurants = useCallback(async () => {
     const res = await axios.get(`${url}/api/restaurant/all`);
     const allRestaurants = res.data.restaurants || [];
     applyRestaurants(allRestaurants, "Popular restaurants");
-  };
+  }, [url]);
 
-  const loadRestaurantsByCity = async (selectedCity) => {
-    const res = await axios.get(`${url}/api/restaurant/city/${selectedCity}`);
-    const cityRestaurants = res.data.restaurants || [];
+  const loadRestaurantsByCity = useCallback(
+    async (selectedCity) => {
+      const res = await axios.get(`${url}/api/restaurant/city/${selectedCity}`);
+      const cityRestaurants = res.data.restaurants || [];
 
-    if (cityRestaurants.length > 0) {
-      applyRestaurants(cityRestaurants, `Restaurants in ${selectedCity}`);
-      return;
-    }
+      if (cityRestaurants.length > 0) {
+        applyRestaurants(cityRestaurants, `Restaurants in ${selectedCity}`);
+        return;
+      }
 
-    await loadAllRestaurants();
-  };
+      await loadAllRestaurants();
+    },
+    [loadAllRestaurants, url]
+  );
 
   // ✅ Initial load: detect city & load restaurants
   useEffect(() => {
@@ -58,7 +61,7 @@ const RestaurantList = () => {
     };
 
     fetchRestaurants();
-  }, [url]);
+  }, [loadRestaurantsByCity]);
 
   // ✅ When user selects/switches city
   useEffect(() => {
@@ -72,7 +75,7 @@ const RestaurantList = () => {
       }
     };
     loadByCity();
-  }, [city, url]);
+  }, [city, loadAllRestaurants, loadRestaurantsByCity]);
 
   // ✅ Search filter
   useEffect(() => {
