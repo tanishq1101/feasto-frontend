@@ -12,7 +12,23 @@ export const StoreContext = createContext(null);
 export const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const [food_list, setFoodList] = useState([]);
+  const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [city, setCity] = useState(() => {
+    try {
+      return localStorage.getItem("userCity") || "Delhi";
+    } catch (e) {
+      return "Delhi";
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("userCity", city);
+    } catch (e) {
+      console.warn("localStorage is not available:", e.message);
+    }
+  }, [city]);
 
   // Clerk auth hook — replaces custom JWT token management
   const { getToken, isSignedIn, userId, isLoaded } = useAuth();
@@ -34,7 +50,11 @@ export const StoreContextProvider = (props) => {
   const addToCart = async (itemId) => {
     setCartItems((prev) => {
       const updatedCart = { ...prev, [itemId]: (prev[itemId] || 0) + 1 };
-      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      try {
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      } catch (e) {
+        console.warn("Storage not available:", e.message);
+      }
       return updatedCart;
     });
 
@@ -56,7 +76,11 @@ export const StoreContextProvider = (props) => {
       if (!prev[itemId]) return prev;
       const updatedCart = { ...prev, [itemId]: prev[itemId] - 1 };
       if (updatedCart[itemId] <= 0) delete updatedCart[itemId];
-      localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      try {
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      } catch (e) {
+        console.warn("Storage not available:", e.message);
+      }
       return updatedCart;
     });
 
@@ -69,6 +93,31 @@ export const StoreContextProvider = (props) => {
         );
       } catch (err) {
         console.error("Error removing from cart:", err.message);
+      }
+    }
+  };
+
+  const clearItemFromCart = async (itemId) => {
+    setCartItems((prev) => {
+      const updatedCart = { ...prev };
+      delete updatedCart[itemId];
+      try {
+        localStorage.setItem("cartItems", JSON.stringify(updatedCart));
+      } catch (e) {
+        console.warn("Storage not available:", e.message);
+      }
+      return updatedCart;
+    });
+
+    if (isSignedIn) {
+      try {
+        await axios.post(
+          `${url}/api/cart/clear`,
+          { itemId },
+          { headers: await authHeaders() }
+        );
+      } catch (err) {
+        console.error("Error clearing item from cart:", err.message);
       }
     }
   };
@@ -102,6 +151,15 @@ export const StoreContextProvider = (props) => {
     }
   };
 
+  const fetchRestaurantsList = async () => {
+    try {
+      const res = await axios.get(`${url}/api/restaurant/all`);
+      setRestaurants(res.data.restaurants || []);
+    } catch (err) {
+      console.error("Error loading restaurants list:", err.message);
+    }
+  };
+
   const loadCartData = async () => {
     if (!isSignedIn) return;
     try {
@@ -112,7 +170,11 @@ export const StoreContextProvider = (props) => {
       });
       if (res.data.cartData) {
         setCartItems(res.data.cartData);
-        localStorage.setItem("cartItems", JSON.stringify(res.data.cartData));
+        try {
+          localStorage.setItem("cartItems", JSON.stringify(res.data.cartData));
+        } catch (e) {
+          console.warn("Storage not available:", e.message);
+        }
       }
     } catch (err) {
       if (err.response?.status !== 401) {
@@ -178,10 +240,20 @@ export const StoreContextProvider = (props) => {
     async function initialize() {
       try {
         await fetchFoodList();
+        await fetchRestaurantsList();
 
         // Load saved cart from localStorage
-        const savedCart = localStorage.getItem("cartItems");
-        if (savedCart) setCartItems(JSON.parse(savedCart));
+        try {
+          const savedCart = localStorage.getItem("cartItems");
+          if (savedCart) {
+            const parsed = JSON.parse(savedCart);
+            if (parsed && typeof parsed === "object") {
+              setCartItems(parsed);
+            }
+          }
+        } catch (e) {
+          console.warn("Failed to load saved cart:", e);
+        }
 
         if (isSignedIn) {
           // Trigger sync and load cart data in background (do not block app loading)
@@ -208,10 +280,12 @@ export const StoreContextProvider = (props) => {
   // ---------- Context Value ----------
   const contextValue = {
     food_list,
+    restaurants,
     cartItems,
     setCartItems,
     addToCart,
     removeFromCart,
+    clearItemFromCart,
     getTotalCartAmount,
     url,
     // Expose Clerk auth state instead of custom token
@@ -219,9 +293,11 @@ export const StoreContextProvider = (props) => {
     userId,
     authHeaders,
     loading,
+    city,
+    setCity,
   };
 
-  if (!isLoaded || !isUserLoaded || loading) return null;
+  if (!isLoaded || !isUserLoaded) return null;
 
   return (
     <StoreContext.Provider value={contextValue}>

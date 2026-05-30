@@ -12,6 +12,9 @@ import MyOrders from "./pages/MyOrders/MyOrders.jsx";
 import PaymentSuccess from "./pages/payment-success.jsx";
 import PaymentFailed from "./pages/payment-failed.jsx";
 import RestaurantMenu from "./pages/restaurantMenu/restaurantMenu";
+import FooterDetails from "./pages/FooterDetails/FooterDetails.jsx";
+import BottomCartPill from "./components/BottomCartPill/BottomCartPill.jsx";
+import Support from "./pages/Support/Support.jsx";
 import { useUser } from "@clerk/clerk-react";
 
 const App = () => {
@@ -19,17 +22,17 @@ const App = () => {
   const { loading } = useContext(StoreContext);
   const { isSignedIn } = useUser();
 
-  if (loading) return null;
-
-  // Only show login popup if not already signed in
-  const showLoginPopup = showLogin && !isSignedIn;
-
   useEffect(() => {
     const chatbot = document.getElementById("chatbot-container");
     if (chatbot) {
       chatbot.classList.remove("hidden");
     }
   }, []);
+
+  if (loading) return null;
+
+  // Only show login popup if not already signed in
+  const showLoginPopup = showLogin && !isSignedIn;
 
   return (
     <>
@@ -46,9 +49,12 @@ const App = () => {
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-failed" element={<PaymentFailed />} />
           <Route path="/restaurant/:id" element={<RestaurantMenu />} />
+          <Route path="/info/:section" element={<FooterDetails />} />
+          <Route path="/support" element={<Support />} />
         </Routes>
 
       </div>
+      <BottomCartPill />
       <Footer />
     </>
   );

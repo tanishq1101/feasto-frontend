@@ -1,0 +1,125 @@
+/* ===== FLOATING BOTTOM CART PILL ===== */
+.bottom-cart-pill-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 460px;
+  height: 62px;
+  background: linear-gradient(135deg, #ff6b35 0%, #e0531f 100%);
+  border-radius: 35px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 10px 30px rgba(224, 83, 31, 0.35);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+  animation: slideUpPill 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bottom-cart-pill-container:hover {
+  transform: translateX(-50%) scale(1.03) translateY(-2px);
+  box-shadow: 0 12px 35px rgba(224, 83, 31, 0.45);
+}
+
+.bottom-cart-pill-container:active {
+  transform: translateX(-50%) scale(1.01);
+}
+
+@keyframes slideUpPill {
+  from {
+    transform: translate(-50%, 120px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* LEFT SECTION - PRICE & ITEM COUNT */
+.bottom-cart-pill-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cart-badge-icon {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pill-cart-svg {
+  width: 18px;
+  height: 18px;
+  color: #ffffff;
+}
+
+.cart-count-bubble {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #ffffff;
+  color: #e0531f;
+  font-size: 0.72rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.cart-price-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.pill-item-lbl {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pill-price-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+/* RIGHT SECTION - VIEW CART ACTION */
+.bottom-cart-pill-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pill-arrow-svg {
+  width: 16px;
+  height: 16px;
+  color: #ffffff;
+  transition: transform 0.2s ease;
+}
+
+.bottom-cart-pill-container:hover .pill-arrow-svg {
+  transform: translateX(4px);
+}

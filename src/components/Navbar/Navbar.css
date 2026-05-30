@@ -125,40 +125,433 @@
     display: none;
   }
 }
-.navbar-search-box {
-  position: relative;
-  display: inline-block;
-  margin-left: 10px;
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
-.navbar-search-box input {
-  padding: 4px 8px;
-  border: 1px solid #ccc;
+/* PREMIUM LOCATION SELECTOR */
+.navbar-location-picker {
+  position: relative;
+}
+
+.location-picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.location-picker-trigger:hover {
+  background: #edf2f7;
+  border-color: tomato;
+  transform: translateY(-1px);
+}
+
+.dark-theme .location-picker-trigger {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #f7fafc;
+}
+.dark-theme .location-picker-trigger:hover {
+  background: #4a5568;
+  border-color: tomato;
+}
+
+.location-picker-trigger .pin-icon {
+  font-size: 16px;
+}
+
+.location-picker-trigger .arrow-icon {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-left: 2px;
+}
+
+/* City dropdown modal */
+.location-dropdown-modal {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  padding: 16px;
+  z-index: 999;
+  animation: slideDownFade 0.2s ease-out;
+}
+
+.dark-theme .location-dropdown-modal {
+  background: #1a202c;
+  border-color: #2d3748;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.location-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.location-dropdown-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #1a202c;
+  font-weight: 600;
+}
+
+.dark-theme .location-dropdown-header h4 {
+  color: #fff;
+}
+
+.location-dropdown-header .close-btn {
+  background: none !important;
+  border: none !important;
+  font-size: 20px !important;
+  padding: 0 !important;
+  color: #a0aec0 !important;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.location-search-input-wrapper {
+  margin-bottom: 12px;
+}
+
+.location-search-input-wrapper input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e0;
   border-radius: 8px;
   outline: none;
   font-size: 14px;
-}
-
-.search-results {
-  position: absolute;
-  top: 30px;
-  left: 0;
+  box-sizing: border-box;
   background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  width: 180px;
-  max-height: 150px;
+  color: #2d3748;
+}
+
+.dark-theme .location-search-input-wrapper input {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #fff;
+}
+
+.cities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  max-height: 200px;
   overflow-y: auto;
-  list-style: none;
-  padding: 4px;
-  z-index: 10;
+  padding-right: 4px;
 }
 
-.search-results li {
-  padding: 4px 6px;
+.cities-grid::-webkit-scrollbar {
+  width: 4px;
+}
+.cities-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.city-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f7fafc;
+  border: 1px solid transparent;
+  color: #4a5568;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.search-results li:hover {
-  background-color: #f2f2f2;
+.city-item:hover {
+  background: #edf2f7;
+  color: tomato;
+}
+
+.city-item.selected {
+  background: rgba(255, 99, 71, 0.1);
+  color: tomato;
+  border-color: tomato;
+  font-weight: 600;
+}
+
+.dark-theme .city-item {
+  background: #2d3748;
+  color: #cbd5e0;
+}
+.dark-theme .city-item:hover {
+  background: #4a5568;
+  color: tomato;
+}
+
+.no-cities {
+  grid-column: span 2;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 13px;
+  padding: 12px;
+}
+
+/* PREMIUM GLOBAL SEARCH BOX */
+.navbar-search-area {
+  position: relative;
+}
+
+.navbar-search-box {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 380px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
+  padding: 12px;
+  z-index: 1000;
+}
+
+.dark-theme .navbar-search-box {
+  background: #1a202c;
+  border-color: #2d3748;
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.4);
+}
+
+.navbar-search-box input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e0;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.dark-theme .navbar-search-box input {
+  background: #2d3748;
+  border-color: #4a5568;
+  color: #fff;
+}
+
+/* PREMIUM SEARCH RESULTS */
+.search-results-premium {
+  margin-top: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.search-results-premium::-webkit-scrollbar {
+  width: 4px;
+}
+.search-results-premium::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.search-section {
+  margin-bottom: 16px;
+}
+
+.search-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a0aec0;
+  font-weight: 700;
+}
+
+/* Dishes List styling */
+.search-dishes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-dish-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  transition: background 0.2s ease;
+}
+
+.search-dish-card:hover {
+  background: #edf2f7;
+}
+
+.dark-theme .search-dish-card {
+  background: #2d3748;
+}
+.dark-theme .search-dish-card:hover {
+  background: #4a5568;
+}
+
+.search-dish-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.search-dish-info {
+  flex-grow: 1;
+}
+
+.search-dish-info h5 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.dark-theme .search-dish-info h5 {
+  color: #fff;
+}
+
+.search-dish-price {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: tomato;
+  font-weight: 700;
+}
+
+/* Quick Add/Remove Buttons */
+.search-add-btn {
+  background: white !important;
+  color: #2e7d32 !important;
+  border: 1px solid #c8e6c9 !important;
+  padding: 4px 12px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.2s ease !important;
+}
+
+.search-add-btn:hover {
+  background: #e8f5e9 !important;
+  border-color: #2e7d32 !important;
+}
+
+.search-counter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2e7d32;
+  color: white;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.search-counter-btn span {
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+/* Restaurant list styling */
+.search-restaurants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-restaurant-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-restaurant-card:hover {
+  background: #edf2f7;
+  transform: translateX(2px);
+}
+
+.dark-theme .search-restaurant-card {
+  background: #2d3748;
+}
+.dark-theme .search-restaurant-card:hover {
+  background: #4a5568;
+}
+
+.search-restaurant-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.search-restaurant-info {
+  flex-grow: 1;
+}
+
+.search-restaurant-info h5 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.dark-theme .search-restaurant-info h5 {
+  color: #fff;
+}
+
+.search-restaurant-cuisine {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #718096;
+}
+
+.search-restaurant-rating {
+  font-size: 11px;
+  color: #e2a400;
+  font-weight: 700;
+}
+
+.search-no-results {
+  text-align: center;
+  color: #a0aec0;
+  font-size: 13px;
+  padding: 20px 0;
 }

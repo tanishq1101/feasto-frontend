@@ -21,12 +21,28 @@ const RestaurantMenu = () => {
 
   // ✅ Cuisine → Food Categories Mapping
   const cuisineCategoryMap = {
-    "South Indian": ["Pure Veg", "Noodles", "Rice", "Non-Veg", "Biryani"],
-    "North Indian": ["Pure Veg", "Rolls", "Cake", "Sandwich", "Non-Veg"],
+    "South Indian": ["Pure Veg", "Noodles", "Biryani"],
+    "North Indian": ["Pure Veg", "Rolls", "Cake", "Sandwich"],
     "Punjabi": ["Pure Veg", "Noodles", "Sandwich"],
     "Chinese": ["Noodles", "Rolls", "Sandwich"],
-    "Italian": ["Pasta", "Sandwich", "Cake"],
-    "Biryani": ["Rice", "Non-Veg", "Pure Veg"],
+    "Italian": ["Pasta", "Sandwich", "Cake", "Pizza"],
+    "Biryani": ["Biryani", "Pure Veg"],
+    "Hyderabadi": ["Biryani", "Noodles", "Pure Veg"],
+    "Awadhi": ["Biryani", "Pure Veg"],
+    "Rajasthani": ["Pure Veg", "Salad"],
+    "Bengali": ["Deserts", "Cake", "Pure Veg"],
+    "Street Food": ["Pure Veg", "Sandwich", "Rolls"],
+    "Seafood": ["Noodles", "Pasta", "Pure Veg"],
+    "Goan": ["Noodles", "Pasta", "Pure Veg", "Sandwich", "Pizza"],
+    "Pizza": ["Pizza", "Pasta"],
+    "Pasta": ["Pasta", "Cake"],
+    "Salad": ["Salad", "Sandwich"],
+    "Rolls": ["Rolls", "Pure Veg"],
+    "Sandwich": ["Sandwich", "Salad"],
+    "Pure Veg": ["Pure Veg", "Noodles", "Salad"],
+    "Cake": ["Cake", "Deserts"],
+    "Deserts": ["Deserts", "Cake"],
+    "Modern Indian": ["Pasta", "Pizza", "Pure Veg", "Salad"],
   };
 
   useEffect(() => {
@@ -48,15 +64,35 @@ const RestaurantMenu = () => {
     fetchData();
   }, [id, url]);
 
+  // Helper to extract all allowed categories for this restaurant based on its cuisines
+  const getCompatibleCategories = (cuisineString) => {
+    if (!cuisineString) return [];
+    const tags = cuisineString.split(",").map((c) => c.trim());
+    const categoriesSet = new Set();
+    tags.forEach((tag) => {
+      const allowed = cuisineCategoryMap[tag] || [];
+      allowed.forEach((cat) => categoriesSet.add(cat.toLowerCase()));
+    });
+    return Array.from(categoriesSet);
+  };
+
   // ✅ Filter Food Items Based on Selection
-  let filteredFoods = food_list;
-  if (selectedCategory !== "All") {
-    const allowed = cuisineCategoryMap[selectedCategory] || [];
-    filteredFoods = food_list.filter((item) =>
-      allowed.some((c) =>
-        item.category.toLowerCase().includes(c.toLowerCase())
-      )
-    );
+  let filteredFoods = [];
+  if (restaurant) {
+    const compatibleCats = getCompatibleCategories(restaurant.cuisine);
+    
+    if (selectedCategory === "All") {
+      filteredFoods = food_list.filter((item) =>
+        compatibleCats.includes(item.category?.toLowerCase())
+      );
+    } else {
+      const allowed = cuisineCategoryMap[selectedCategory] || [];
+      filteredFoods = food_list.filter((item) =>
+        allowed.some((c) =>
+          item.category?.toLowerCase().includes(c.toLowerCase())
+        )
+      );
+    }
   }
 
   // ✅ Reviews Submit
@@ -76,13 +112,13 @@ const RestaurantMenu = () => {
       {restaurant && (
         <div className="restaurant-header">
           <img
-  src={
-    restaurant.image?.startsWith("http")
-      ? restaurant.image
-      : `${url}/images/${restaurant.image}`
-  }
-  alt={restaurant.name}
-/>
+            src={
+              restaurant.image?.startsWith("http")
+                ? restaurant.image
+                : `${url}/images/${restaurant.image}`
+            }
+            alt={restaurant.name}
+          />
 
           <div>
             <h2>{restaurant.name}</h2>

@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useContext, useCallback } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import "./restaurantList.css";
 import { getUserCity } from "../../utils/getUserCity";
 import { indianCities } from "../../data/cities";
@@ -8,83 +7,65 @@ import { StoreContext } from "../../context/StoreContext";
 import { getEntityId } from "../../utils/entityId";
 
 const RestaurantList = () => {
-  const { url } = useContext(StoreContext);
+  const { url, city, setCity, restaurants } = useContext(StoreContext);
 
-  const [restaurants, setRestaurants] = useState([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
-  const [city, setCity] = useState("Detecting...");
-  const [heading, setHeading] = useState("Restaurants near you");
+  const [heading, setHeading] = useState("Popular restaurants");
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
-  const applyRestaurants = (items, title) => {
-    setRestaurants(items);
-    setFilteredRestaurants(items);
-    setHeading(title);
-  };
-
-  const loadAllRestaurants = useCallback(async () => {
-    const res = await axios.get(`${url}/api/restaurant/all`);
-    const allRestaurants = res.data.restaurants || [];
-    applyRestaurants(allRestaurants, "Popular restaurants");
-  }, [url]);
-
-  const loadRestaurantsByCity = useCallback(
-    async (selectedCity) => {
-      const res = await axios.get(`${url}/api/restaurant/city/${selectedCity}`);
-      const cityRestaurants = res.data.restaurants || [];
-
-      if (cityRestaurants.length > 0) {
-        applyRestaurants(cityRestaurants, `Restaurants in ${selectedCity}`);
-        return;
-      }
-
-      await loadAllRestaurants();
-    },
-    [loadAllRestaurants, url]
-  );
-
-  // ✅ Initial load: detect city & load restaurants
+  // Detect city initially if default or unset
   useEffect(() => {
-    const fetchRestaurants = async () => {
-      const detectedCity = await getUserCity();
-      const selectedCity = detectedCity || "Delhi"; // Fallback default city
-      setCity(selectedCity);
-
-      try {
-        await loadRestaurantsByCity(selectedCity);
-      } catch (err) {
-        console.error("Restaurant load error:", err);
-        applyRestaurants([], "Popular restaurants");
+    const detect = async () => {
+      if (!city || city === "Detecting...") {
+        const detectedCity = await getUserCity();
+        setCity(detectedCity || "Delhi");
       }
     };
+    detect();
+  }, [city, setCity]);
 
-    fetchRestaurants();
-  }, [loadRestaurantsByCity]);
-
-  // ✅ When user selects/switches city
+  // Dynamic Filtering based on selected city & global restaurants list
   useEffect(() => {
-    if (!city) return;
-    const loadByCity = async () => {
-      try {
-        await loadRestaurantsByCity(city);
-      } catch (err) {
-        console.log("City change fetch error:", err);
-        await loadAllRestaurants();
+    if (!restaurants || restaurants.length === 0) {
+      setLoading(true);
+      return;
+    }
+    setLoading(false);
+
+    if (city === "All Cities" || !city || city === "Detecting...") {
+      setFilteredRestaurants(restaurants);
+      setHeading("Popular restaurants");
+    } else {
+      const cityRests = restaurants.filter(
+        (r) => r.city?.toLowerCase() === city.toLowerCase()
+      );
+      if (cityRests.length > 0) {
+        setFilteredRestaurants(cityRests);
+        setHeading(`Restaurants in ${city}`);
+      } else {
+        setFilteredRestaurants([]);
+        setHeading(`No restaurants in ${city}`);
       }
-    };
-    loadByCity();
-  }, [city, loadAllRestaurants, loadRestaurantsByCity]);
+    }
+  }, [city, restaurants]);
 
-  // ✅ Search filter
+  // Search filter
   useEffect(() => {
-    const filtered = restaurants.filter((r) =>
-      r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.cuisine.toLowerCase().includes(search.toLowerCase())
+    const activeList =
+      city === "All Cities" || !city || city === "Detecting..."
+        ? restaurants
+        : restaurants.filter((r) => r.city?.toLowerCase() === city.toLowerCase());
+
+    const filtered = activeList.filter(
+      (r) =>
+        r.name?.toLowerCase().includes(search.toLowerCase()) ||
+        r.cuisine?.toLowerCase().includes(search.toLowerCase())
     );
     setFilteredRestaurants(filtered);
-  }, [search, restaurants]);
+  }, [search, city, restaurants]);
 
   return (
     <div className="restaurant-list">
@@ -123,34 +104,73 @@ const RestaurantList = () => {
         </div>
       </div>
 
-      {/* ✅ Restaurant Cards */}
-      <div className="restaurant-grid">
-        {filteredRestaurants.map((r) => (
-          <div
-            key={getEntityId(r)}
-            className="restaurant-card"
-            onClick={() => navigate(`/restaurant/${getEntityId(r)}`)}
-          >
-            <img
-              src={
-                r.image?.startsWith("http")
-                  ? r.image
-                  : r.image
-                  ? `${url}/images/${r.image}`
-                  : "/default_restaurant.png"
-              }
-              alt={r.name}
-            />
-            <h3>{r.name}</h3>
-            <p>{r.cuisine} • {r.city}</p>
-            <p className="rating">⭐ {r.rating}</p>
-          </div>
-        ))}
+      {/* ✅ Restaurant Cards Grid / Skeletons */}
+      {loading ? (
+        <div className="restaurant-grid">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="restaurant-card-skeleton pulsing">
+              <div className="skeleton-image"></div>
+              <div className="skeleton-info">
+                <div className="skeleton-title"></div>
+                <div className="skeleton-meta">
+                  <div className="skeleton-rating"></div>
+                  <div className="skeleton-distance"></div>
+                </div>
+                <div className="skeleton-footer">
+                  <div className="skeleton-cuisine"></div>
+                  <div className="skeleton-cost"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="restaurant-grid">
+          {filteredRestaurants.map((r) => {
+            const ratingNum = r.rating || 4.0;
+            const timeEst = 20 + Math.round((ratingNum * 7) % 15);
+            const distanceEst = (((ratingNum * 4) % 3) + 1.1).toFixed(1);
+            const costForTwo = 200 + Math.round((ratingNum * 120) % 250);
 
-        {filteredRestaurants.length === 0 && (
-          <p className="no-results">No restaurants found here.</p>
-        )}
-      </div>
+            return (
+              <div
+                key={getEntityId(r)}
+                className="restaurant-card-premium"
+                onClick={() => navigate(`/restaurant/${getEntityId(r)}`)}
+              >
+                <div className="restaurant-img-wrapper">
+                  <img
+                    src={
+                      r.image?.startsWith("http")
+                        ? r.image
+                        : r.image
+                        ? `${url}/images/${r.image}`
+                        : "/default_restaurant.png"
+                    }
+                    alt={r.name}
+                  />
+                  <span className="time-tag">🕒 {timeEst} mins</span>
+                </div>
+                <div className="restaurant-info-premium">
+                  <h3 className="restaurant-name-premium">{r.name}</h3>
+                  <div className="restaurant-meta-row">
+                    <span className="rating-pill">⭐ {ratingNum}</span>
+                    <span className="distance-txt">📍 {distanceEst} km</span>
+                  </div>
+                  <div className="restaurant-footer-row">
+                    <span className="cuisine-txt">{r.cuisine}</span>
+                    <span className="cost-two-txt">₹{costForTwo} for two</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {filteredRestaurants.length === 0 && (
+            <p className="no-results">No restaurants found here.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

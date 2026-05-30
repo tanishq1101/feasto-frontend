@@ -1,210 +1,752 @@
-/* ===== My Orders Container ===== */
-.my-orders {
-  margin: 40px auto;
-  max-width: 900px;
-  font-family: "Poppins", "Segoe UI", Roboto, sans-serif;
-  color: #222;
-  padding: 0 15px;
-  background-color: #f9f9f9;
+/* ===== MY ORDERS PAGE ROOT & LAYOUT ===== */
+.my-orders-page {
+  margin-top: 100px;
+  margin-bottom: 80px;
+  animation: fadeIn 0.5s ease;
 }
 
-/* ===== Heading ===== */
-.my-orders h2 {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 600;
-  color: #111;
+.my-orders-page h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1a1a1a;
   margin-bottom: 30px;
   position: relative;
   display: inline-block;
 }
 
-.my-orders h2::after {
+.my-orders-page h2::after {
   content: "";
   position: absolute;
+  left: 0;
   bottom: -6px;
-  left: 50%;
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #0077b6, #00b4d8);
-  border-radius: 10px;
-  transform: translateX(-50%);
-  transition: width 0.3s ease;
+  width: 50px;
+  height: 4px;
+  background-color: #ff6b35;
+  border-radius: 2px;
 }
 
-.my-orders h2:hover::after {
-  width: 100px;
-}
-
-/* ===== Orders List ===== */
 .orders-container {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 25px;
 }
 
-/* ===== Single Order Card ===== */
-.order-card {
+/* ===== PREMIUM ORDER CARD ===== */
+.order-card-premium {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-  border-radius: 12px;
-  background-color: #fff;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border-left: 5px solid #0077b6;
 }
 
-.order-card:hover {
+.order-card-premium:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
-.order-card p {
-  margin: 4px 0;
-  font-size: 14px;
-  line-height: 1.5;
+/* CARD HEADER */
+.order-card-header {
+  background-color: #fafbfb;
+  padding: 20px 24px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.order-card p b {
+.order-meta-label {
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #111;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 4px;
 }
 
-.order-card p span {
+.order-id-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  font-family: monospace;
+}
+
+.order-meta-right {
+  text-align: right;
+}
+
+.order-price-val {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ff6b35;
+}
+
+/* CARD BODY */
+.order-card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.order-details-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.order-items-list strong, .order-address-box strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  display: block;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.order-items-list ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-items-list li {
+  font-size: 0.95rem;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-qty-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: #f1f3f4;
+  color: #5f6368;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-left: 5px;
+}
+
+.order-address-box p {
+  font-size: 0.95rem;
+  color: #495057;
+  line-height: 1.6;
+}
+
+/* ===== VISUAL STEPPER TRACKING ===== */
+.order-tracking-stepper {
+  position: relative;
+  padding: 20px 0 10px;
+  margin-top: 10px;
+}
+
+.stepper-progress-bar {
+  position: absolute;
+  top: 38px;
+  left: 50px;
+  right: 50px;
+  height: 4px;
+  background-color: #eef1f2;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.stepper-progress-line {
+  height: 100%;
+  background-color: #ff6b35;
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stepper-steps-wrapper {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  z-index: 2;
+}
+
+.step-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 2.5px solid #ced4da;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.step-icon {
+  width: 18px;
+  height: 18px;
+  color: #888888;
+  transition: all 0.4s ease;
+}
+
+.step-label {
+  margin-top: 10px;
+  font-size: 0.82rem;
   font-weight: 500;
-  color: #333;
+  color: #888888;
+  transition: all 0.4s ease;
+  text-align: center;
 }
 
-/* ===== Status Tags ===== */
-.status-tag {
-  display: inline-block;
+/* Completed Step States */
+.step-node.completed .step-circle {
+  background-color: #ff6b35;
+  border-color: #ff6b35;
+}
+
+.step-node.completed .step-icon {
+  color: #ffffff;
+}
+
+.step-node.completed .step-label {
+  color: #ff6b35;
+  font-weight: 600;
+}
+
+/* Active Step States */
+.step-node.active .step-circle {
+  border-color: #ff6b35;
+  background-color: #ffffff;
+  animation: stepPulse 1.8s infinite;
+}
+
+.step-node.active .step-icon {
+  color: #ff6b35;
+}
+
+.step-node.active .step-label {
+  color: #ff6b35;
+  font-weight: 700;
+}
+
+@keyframes stepPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 107, 53, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
+  }
+}
+
+/* CARD FOOTER */
+.order-card-footer {
+  background-color: #fafbfb;
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-payment-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.payment-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
   padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #fff;
-  text-transform: capitalize;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  margin-left: 6px;
+  display: inline-block;
 }
 
-.status-pending {
-  background-color: #fbbf24; /* yellow */
+.payment-badge.paid {
+  background-color: #ecfdf5;
+  color: #047857;
 }
 
-.status-out {
-  background-color: #f97316; /* orange */
+.payment-badge.cod {
+  background-color: #fffbeb;
+  color: #b45309;
 }
 
-.status-delivered {
-  background-color: #22c55e; /* green */
+.order-actions {
+  display: flex;
+  gap: 12px;
 }
 
-.status-cod {
-  background-color: #16a34a; /* dark green */
-}
-
-.status-paid {
-  background-color: #0284c7; /* blue */
-}
-
-/* ===== Items Styling ===== */
-.items-list span {
-  background-color: #e0f2fe;
-  padding: 4px 8px;
-  border-radius: 5px;
-  font-size: 12px;
-  color: #0369a1;
-  font-weight: 500;
-}
-
-/* ===== Address & Amount ===== */
-.address {
-  font-size: 13px;
-  color: #555;
-}
-
-.amount {
-  font-size: 15px;
+.btn-track, .btn-delete {
+  padding: 8px 16px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #111;
-}
-
-/* ===== Buttons ===== */
-.track-order,
-.delete-order {
-  padding: 8px 14px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 30px;
+  border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: none;
 }
 
-.track-order {
-  background: #0077b6;
-  color: #fff;
+.btn-track {
+  background-color: #1a1a1a;
+  color: white;
 }
 
-.track-order:hover {
-  background: #005f8f;
+.btn-track:hover {
+  background-color: #333333;
 }
 
-.delete-order {
-  background-color: #dc2626;
-  color: #fff;
+.btn-delete {
+  background-color: #fff1f0;
+  color: #d9383a;
+  border: 1px solid #ffd8d6;
 }
 
-.delete-order:hover {
-  background-color: #b91c1c;
+.btn-delete:hover {
+  background-color: #e74c3c;
+  color: white;
+  border-color: #e74c3c;
 }
 
-.order-buttons {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-/* ===== Error / No Orders Message ===== */
-.my-orders.error,
-.my-orders > div {
+/* ===== LOADING / ERROR / EMPTY STATES ===== */
+.my-orders-loading, .my-orders-error {
   text-align: center;
-  font-weight: 500;
-  color: #d32f2f;
-  margin-top: 40px;
-  font-size: 16px;
+  padding: 100px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #6c757d;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 768px) {
-  .my-orders h2 {
-    font-size: 24px;
-  }
+.my-orders-error {
+  color: #d9383a;
+}
 
-  .order-card {
-    padding: 15px;
-  }
+.my-orders-empty {
+  max-width: 500px;
+  margin: 100px auto;
+  text-align: center;
+  padding: 40px 20px;
+}
 
-  .order-card p {
-    font-size: 13px;
-  }
+.empty-orders-visual {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: inline-block;
+  animation: floatEffect 3s ease-in-out infinite;
+}
 
-  .items-list span {
-    font-size: 11px;
-  }
+@keyframes floatEffect {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
 
-  .status-tag {
-    font-size: 11px;
-    padding: 3px 7px;
-  }
+.my-orders-empty h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+}
 
-  .track-order,
-  .delete-order {
-    font-size: 13px;
-    padding: 6px 12px;
+.my-orders-empty p {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+/* ===== DARK THEME OVERRIDES ===== */
+body.dark-theme .my-orders-page h2 {
+  color: #f0f2f8;
+}
+
+body.dark-theme .order-card-premium {
+  background: #1a1d27;
+  border-color: #252838;
+}
+
+body.dark-theme .order-card-header {
+  background-color: #121214;
+  border-bottom-color: #252838;
+}
+
+body.dark-theme .order-id-val {
+  color: #f0f2f8;
+}
+
+body.dark-theme .order-meta-label {
+  color: #8b92a9;
+}
+
+body.dark-theme .order-items-list strong, 
+body.dark-theme .order-address-box strong {
+  color: #f0f2f8;
+}
+
+body.dark-theme .order-items-list li,
+body.dark-theme .order-address-box p {
+  color: #b3b9d1;
+}
+
+body.dark-theme .item-qty-badge {
+  background-color: #252838;
+  color: #b3b9d1;
+}
+
+body.dark-theme .stepper-progress-bar {
+  background-color: #252838;
+}
+
+body.dark-theme .step-circle {
+  background-color: #1a1d27;
+  border-color: #252838;
+}
+
+body.dark-theme .step-icon {
+  color: #8b92a9;
+}
+
+body.dark-theme .step-label {
+  color: #8b92a9;
+}
+
+body.dark-theme .step-node.completed .step-circle {
+  background-color: #ff6b35;
+  border-color: #ff6b35;
+}
+
+body.dark-theme .step-node.active .step-circle {
+  background-color: #1a1d27;
+  border-color: #ff6b35;
+}
+
+body.dark-theme .order-card-footer {
+  background-color: #121214;
+  border-top-color: #252838;
+}
+
+body.dark-theme .order-payment-status {
+  color: #b3b9d1;
+}
+
+body.dark-theme .payment-badge.paid {
+  background-color: rgba(4, 120, 87, 0.15);
+  color: #34d399;
+}
+
+body.dark-theme .payment-badge.cod {
+  background-color: rgba(180, 83, 9, 0.15);
+  color: #fbbf24;
+}
+
+body.dark-theme .btn-track {
+  background-color: #ff6b35;
+}
+
+body.dark-theme .btn-track:hover {
+  background-color: #e0531f;
+}
+
+body.dark-theme .btn-delete {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-color: rgba(231, 76, 60, 0.2);
+}
+
+body.dark-theme .btn-delete:hover {
+  background-color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+body.dark-theme .my-orders-empty h2 {
+  color: #f0f2f8;
+}
+
+body.dark-theme .my-orders-empty p {
+  color: #b3b9d1;
+}
+
+/* ===== RESPONSIVE DESIGNS ===== */
+@media (max-width: 900px) {
+  .order-details-info {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 650px) {
+  .stepper-progress-bar {
+    left: 20px;
+    right: 20px;
+  }
+  .step-node {
+    width: 60px;
+  }
+  .step-circle {
+    width: 32px;
+    height: 32px;
+  }
+  .step-icon {
+    width: 14px;
+    height: 14px;
+  }
+  .step-label {
+    font-size: 0.72rem;
+  }
+  .order-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .order-meta-right {
+    text-align: left;
+  }
+  .order-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .order-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ===== LIVE ORDER TRACKER DRAWER ===== */
+.live-tracker-panel {
+  border-top: 1px solid #f1f3f5;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+body.dark-theme .live-tracker-panel {
+  border-top-color: #252838;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px 20px;
+  border-left: 4px solid #ff6b35;
+}
+
+body.dark-theme .tracker-header {
+  background: #121214;
+}
+
+.tracker-eta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eta-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #868e96;
+  letter-spacing: 0.8px;
+}
+
+.eta-timer {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ff6b35;
+  margin: 0;
+}
+
+.tracker-status-block {
+  text-align: right;
+  max-width: 60%;
+}
+
+.status-label-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  display: block;
+  margin-bottom: 2px;
+}
+
+body.dark-theme .status-label-heading {
+  color: #f0f2f8;
+}
+
+.status-subtext {
+  font-size: 0.82rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+body.dark-theme .status-subtext {
+  color: #8b92a9;
+}
+
+/* Map SVG container styling */
+.tracker-map-container {
+  width: 100%;
+  background: #edf2f7;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #e2e8f0;
+}
+
+body.dark-theme .tracker-map-container {
+  background: #151821;
+  border-color: #252838;
+}
+
+.route-svg {
+  display: block;
+}
+
+/* Driver card */
+.driver-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+body.dark-theme .driver-card {
+  background: #252838;
+  border-color: #252838;
+}
+
+.driver-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.driver-avatar {
+  font-size: 1.8rem;
+  background: #fff4f0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+body.dark-theme .driver-avatar {
+  background: #121214;
+}
+
+.driver-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+body.dark-theme .driver-name {
+  color: #f0f2f8;
+}
+
+.driver-rating {
+  font-size: 0.78rem;
+  color: #718096;
+  margin: 2px 0 0 0;
+}
+
+.driver-call-btn {
+  background: #e8f5e9 !important;
+  color: #2e7d32 !important;
+  border: 1px solid #a5d6a7 !important;
+  padding: 8px 18px !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  border-radius: 30px !important;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.driver-call-btn:hover {
+  background: #2e7d32 !important;
+  color: white !important;
+  border-color: #2e7d32 !important;
+}
+
+.btn-live-track {
+  background-color: #ff6b35;
+  color: white;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-live-track:hover {
+  background-color: #e0531f;
+}
+
+.btn-live-track.active {
+  background-color: #4a5568;
+}
+
+.btn-live-track.active:hover {
+  background-color: #2d3748;
+}
+
+@media (max-width: 650px) {
+  .tracker-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .tracker-status-block {
+    text-align: left;
+    max-width: 100%;
+  }
+  .driver-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .driver-call-btn {
+    text-align: center;
+    width: 100%;
   }
 }
