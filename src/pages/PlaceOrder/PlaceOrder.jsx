@@ -6,8 +6,18 @@ import { getEntityId } from "../../utils/entityId";
 import { useNavigate } from "react-router-dom";
 
 const PlaceOrder = () => {
-  const { getTotalCartAmount, cartItems, food_list, authHeaders, url } =
-    useContext(StoreContext);
+  const { 
+    getTotalCartAmount, 
+    cartItems, 
+    food_list, 
+    authHeaders, 
+    url,
+    setCartItems,
+    promoDiscount,
+    setPromoDiscount,
+    appliedPromo,
+    setAppliedPromo
+  } = useContext(StoreContext);
   const navigate = useNavigate();
 
   const [paymentMethod, setPaymentMethod] = useState("stripe"); // 'stripe' or 'cod'
@@ -71,7 +81,9 @@ const PlaceOrder = () => {
     const orderData = {
       address: data,
       items: orderItems.map(({ name, price, quantity }) => ({ name, price, quantity })),
-      amount: getTotalCartAmount() + 40,
+      amount: grandTotal,
+      promoDiscount,
+      appliedPromo,
     };
 
     try {
@@ -96,7 +108,9 @@ const PlaceOrder = () => {
     const orderData = {
       address: data,
       items: orderItems.map(({ name, price, quantity }) => ({ name, price, quantity })),
-      amount: getTotalCartAmount() + 40,
+      amount: grandTotal,
+      promoDiscount,
+      appliedPromo,
     };
 
     try {
@@ -105,6 +119,15 @@ const PlaceOrder = () => {
 
       if (response.data?.success) {
         alert("Order placed successfully (Cash on Delivery)");
+        // Clear cart and reset promo code states
+        setCartItems({});
+        setPromoDiscount(0);
+        setAppliedPromo("");
+        try {
+          localStorage.removeItem("cartItems");
+        } catch (e) {
+          console.warn("Storage not available:", e.message);
+        }
         navigate("/myorders", { state: { refresh: true } });
       } else {
         alert(response.data?.message || "COD order failed.");
@@ -127,7 +150,7 @@ const PlaceOrder = () => {
   const orderItems = getOrderItems();
   const subtotal = getTotalCartAmount();
   const deliveryFee = subtotal === 0 ? 0 : 40;
-  const grandTotal = subtotal === 0 ? 0 : subtotal + deliveryFee;
+  const grandTotal = subtotal === 0 ? 0 : Math.max(0, subtotal + deliveryFee - promoDiscount);
 
   return (
     <div className="place-order-page">
@@ -327,6 +350,12 @@ const PlaceOrder = () => {
                 <span>Delivery Fee</span>
                 <span>₹{deliveryFee}</span>
               </div>
+              {promoDiscount > 0 && (
+                <div className="summary-total-line" style={{ color: "#2e7d32", fontWeight: "600" }}>
+                  <span>Promo Discount ({appliedPromo})</span>
+                  <span>-₹{promoDiscount}</span>
+                </div>
+              )}
               <hr className="summary-divider-thin" />
               <div className="summary-total-line grand-total">
                 <span>Grand Total</span>

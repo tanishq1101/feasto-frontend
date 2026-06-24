@@ -14,6 +14,8 @@ export const StoreContextProvider = (props) => {
   const [food_list, setFoodList] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [appliedPromo, setAppliedPromo] = useState("");
   const [city, setCity] = useState(() => {
     try {
       return localStorage.getItem("userCity") || "Delhi";
@@ -295,6 +297,10 @@ export const StoreContextProvider = (props) => {
     loading,
     city,
     setCity,
+    promoDiscount,
+    setPromoDiscount,
+    appliedPromo,
+    setAppliedPromo,
   };
 
   if (!isLoaded || !isUserLoaded) return null;

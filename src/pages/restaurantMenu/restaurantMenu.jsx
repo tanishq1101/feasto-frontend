@@ -12,6 +12,7 @@ const RestaurantMenu = () => {
   const [restaurant, setRestaurant] = useState(null);
   const [categories, setCategories] = useState(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [loading, setLoading] = useState(true);
 
   const [reviews, setReviews] = useState([
     { name: "Aarav", rating: 5, comment: "Excellent food and great ambiance!" },
@@ -48,6 +49,7 @@ const RestaurantMenu = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const restRes = await axios.get(`${url}/api/restaurant/details/${id}`);
         const rest = restRes.data.restaurant;
         setRestaurant(rest);
@@ -59,6 +61,8 @@ const RestaurantMenu = () => {
         }
       } catch (err) {
         console.log("Error loading restaurant info:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -106,6 +110,52 @@ const RestaurantMenu = () => {
 
   const averageRating =
     reviews.reduce((s, r) => s + r.rating, 0) / reviews.length || 0;
+
+  if (loading) {
+    return (
+      <div className="restaurant-menu-page">
+        {/* Shimmer Restaurant Header */}
+        <div className="restaurant-header">
+          <div className="shimmer-bg" style={{ width: "260px", height: "160px", borderRadius: "10px" }}></div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="shimmer-bg" style={{ width: "280px", height: "30px", borderRadius: "6px" }}></div>
+            <div className="shimmer-bg" style={{ width: "180px", height: "18px", borderRadius: "4px" }}></div>
+            <div className="shimmer-bg" style={{ width: "80px", height: "18px", borderRadius: "4px" }}></div>
+            <div className="shimmer-bg" style={{ width: "220px", height: "18px", borderRadius: "4px" }}></div>
+          </div>
+        </div>
+
+        {/* Shimmer Category Chips */}
+        <div className="category-tabs" style={{ overflow: "hidden" }}>
+          {[1, 2, 3, 4, 5].map((idx) => (
+            <div key={idx} className="shimmer-bg" style={{ width: "100px", height: "36px", borderRadius: "25px", flexShrink: 0 }}></div>
+          ))}
+        </div>
+
+        <div className="shimmer-bg" style={{ width: "150px", height: "24px", margin: "20px 0 12px", borderRadius: "4px" }}></div>
+
+        {/* Shimmer Dishes Grid */}
+        <div className="menu-grid">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
+            <div key={idx} className="food-item" style={{ boxShadow: "0px 0px 10px rgba(0,0,0,0.05)" }}>
+              <div className="food-item-img-container">
+                <div className="shimmer-bg" style={{ width: "100%", height: "100%" }}></div>
+              </div>
+              <div className="food-item-info" style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div className="shimmer-bg" style={{ width: "120px", height: "18px", borderRadius: "4px" }}></div>
+                  <div className="shimmer-bg" style={{ width: "50px", height: "18px", borderRadius: "4px" }}></div>
+                </div>
+                <div className="shimmer-bg" style={{ width: "100%", height: "12px", borderRadius: "3px" }}></div>
+                <div className="shimmer-bg" style={{ width: "80%", height: "12px", borderRadius: "3px" }}></div>
+                <div className="shimmer-bg" style={{ width: "60px", height: "20px", borderRadius: "4px", marginTop: "auto" }}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="restaurant-menu-page">

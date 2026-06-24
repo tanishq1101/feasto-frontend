@@ -191,29 +191,20 @@ const Navbar = ({ setShowLogin }) => {
         </li>
         <li>
           <a
-            href="#app-download"
-            onClick={() => setMenu("mobile-app")}
-            className={menu === "mobile-app" ? "active" : ""}
+            href="#testimonials-section"
+            onClick={() => setMenu("testimonials")}
+            className={menu === "testimonials" ? "active" : ""}
           >
-            mobile-app
-          </a>
-        </li>
-        <li>
-          <a
-            href="#footer"
-            onClick={() => setMenu("contact-us")}
-            className={menu === "contact-us" ? "active" : ""}
-          >
-            contact-us
+            testimonials
           </a>
         </li>
         <li>
           <Link
             to="/support"
-            onClick={() => setMenu("support")}
-            className={menu === "support" ? "active" : ""}
+            onClick={() => setMenu("contact-us")}
+            className={menu === "contact-us" ? "active" : ""}
           >
-            support
+            contact-us
           </Link>
         </li>
       </ul>
@@ -330,7 +321,7 @@ const Navbar = ({ setShowLogin }) => {
           )}
         </div>
 
-        <div className="navbar-search-icon">
+        <div className="navbar-search-icon" id="navbar-cart-icon">
           <Link to="/cart">
             <img src={assets.basket_icon} alt="" />
           </Link>

@@ -7,7 +7,7 @@ const PaymentSuccess = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const session_id = params.get("session_id");
-  const { url, authHeaders } = useContext(StoreContext);
+  const { url, authHeaders, setCartItems, setPromoDiscount, setAppliedPromo } = useContext(StoreContext);
 
   useEffect(() => {
     if (!session_id) {
@@ -26,6 +26,14 @@ const PaymentSuccess = () => {
 
         if (res.data.success) {
           console.log("✅ Order saved!");
+          setCartItems({});
+          setPromoDiscount(0);
+          setAppliedPromo("");
+          try {
+            localStorage.removeItem("cartItems");
+          } catch (e) {
+            console.warn("Storage not available:", e.message);
+          }
           navigate("/myorders", { state: { refresh: true } });
         } else {
           console.log("❌ Save failed, redirecting");

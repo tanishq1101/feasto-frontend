@@ -74,6 +74,46 @@ const FoodDisplay = ({ category = "All", showAll = false }) => {
   // ✅ Capped at Top 20 Unique Food Items
   displayList = displayList.slice(0, 20);
 
+  const getRestaurantForFood = (foodItem) => {
+    if (!restaurants || restaurants.length === 0) return null;
+
+    const cityRests = (city && city !== "All Cities" && city !== "Detecting...")
+      ? restaurants.filter((r) => r.city?.toLowerCase() === city.toLowerCase())
+      : restaurants;
+
+    const categoryLower = foodItem.category?.toLowerCase();
+
+    // 1. Try to find a matching restaurant in the user's city
+    let match = cityRests.find((r) => {
+      if (!r.cuisine) return false;
+      const cuisines = r.cuisine.split(",").map((c) => c.trim().toLowerCase());
+      return cuisines.some((c) => {
+        const mapKey = Object.keys(cuisineCategoryMap).find(
+          (k) => k.toLowerCase() === c
+        );
+        const allowedCats = mapKey ? cuisineCategoryMap[mapKey] : [];
+        return allowedCats.some((cat) => cat.toLowerCase() === categoryLower);
+      });
+    });
+
+    if (match) return match;
+
+    // 2. Fallback to any restaurant globally
+    match = restaurants.find((r) => {
+      if (!r.cuisine) return false;
+      const cuisines = r.cuisine.split(",").map((c) => c.trim().toLowerCase());
+      return cuisines.some((c) => {
+        const mapKey = Object.keys(cuisineCategoryMap).find(
+          (k) => k.toLowerCase() === c
+        );
+        const allowedCats = mapKey ? cuisineCategoryMap[mapKey] : [];
+        return allowedCats.some((cat) => cat.toLowerCase() === categoryLower);
+      });
+    });
+
+    return match || null;
+  };
+
   return (
     <div className="food-display" id="food-display">
       <h2>Top dishes</h2>
@@ -96,17 +136,22 @@ const FoodDisplay = ({ category = "All", showAll = false }) => {
         </div>
       ) : (
         <div className="food-display-list">
-          {displayList.map((item) => (
-            <div id={`food-${getEntityId(item)}`} key={getEntityId(item)}>
-              <FoodItem
-                id={getEntityId(item)}
-                name={item.name}
-                description={item.description}
-                price={item.price}
-                image={item.image}
-              />
-            </div>
-          ))}
+          {displayList.map((item) => {
+            const matchedRest = getRestaurantForFood(item);
+            return (
+              <div id={`food-${getEntityId(item)}`} key={getEntityId(item)}>
+                <FoodItem
+                  id={getEntityId(item)}
+                  name={item.name}
+                  description={item.description}
+                  price={item.price}
+                  image={item.image}
+                  restaurantName={matchedRest?.name}
+                  restaurantId={matchedRest ? getEntityId(matchedRest) : null}
+                />
+              </div>
+            );
+          })}
           {displayList.length === 0 && (
             <p className="no-results" style={{ gridColumn: "1 / -1", textAlign: "center", color: "#868e96", padding: "20px" }}>
               No dishes found matching this city's cuisines.

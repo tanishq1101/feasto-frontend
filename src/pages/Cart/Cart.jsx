@@ -1,17 +1,52 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import "./Cart.css";
 import { StoreContext } from "../../context/StoreContext";
 import { useNavigate } from "react-router-dom";
 import { getEntityId } from "../../utils/entityId";
 
 const Cart = () => {
-  const { cartItems, food_list, addToCart, removeFromCart, clearItemFromCart, getTotalCartAmount, url } =
-    useContext(StoreContext);
+  const { 
+    cartItems, 
+    food_list, 
+    addToCart, 
+    removeFromCart, 
+    clearItemFromCart, 
+    getTotalCartAmount, 
+    url,
+    appliedPromo,
+    setAppliedPromo,
+    promoDiscount,
+    setPromoDiscount
+  } = useContext(StoreContext);
   const navigate = useNavigate();
+
+  const [promoInput, setPromoInput] = useState("");
 
   const totalAmount = getTotalCartAmount();
   const deliveryFee = totalAmount === 0 ? 0 : 40;
-  const grandTotal = totalAmount === 0 ? 0 : totalAmount + deliveryFee;
+  const grandTotal = totalAmount === 0 ? 0 : Math.max(0, totalAmount + deliveryFee - promoDiscount);
+
+  const handleApplyPromo = () => {
+    const code = promoInput.trim().toUpperCase();
+    if (!code) return;
+    
+    if (code === "FIRST40") {
+      setAppliedPromo("FIRST40");
+      setPromoDiscount(40);
+      setPromoInput("");
+    } else if (code === "FIRST5") {
+      setAppliedPromo("FIRST5");
+      setPromoDiscount(80);
+      setPromoInput("");
+    } else {
+      alert("Invalid promo code! Try FIRST40 or FIRST5.");
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo("");
+    setPromoDiscount(0);
+  };
 
   // Find if there are any items in the cart
   const cartHasItems = food_list.some((item) => {
@@ -153,6 +188,12 @@ const Cart = () => {
                 <span>Delivery Fee</span>
                 <span>₹{deliveryFee}</span>
               </div>
+              {promoDiscount > 0 && (
+                <div className="cart-total-line promo-discount-line" style={{ color: "#2e7d32", fontWeight: "600" }}>
+                  <span>Promo Discount ({appliedPromo})</span>
+                  <span>-₹{promoDiscount}</span>
+                </div>
+              )}
               <hr className="summary-divider" />
               <div className="cart-total-line grand-total">
                 <span>Total</span>
@@ -169,9 +210,34 @@ const Cart = () => {
 
           <div className="promocode-card">
             <p className="promocode-title">Have a promo code?</p>
-            <div className="promocode-input-wrapper">
-              <input type="text" placeholder="Enter coupon code" />
-              <button className="promocode-submit-btn">Apply</button>
+            {appliedPromo ? (
+              <div className="promocode-applied-wrapper" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#e8f5e9", padding: "10px 14px", borderRadius: "8px", border: "1px solid #c8e6c9", marginTop: "10px" }}>
+                <div>
+                  <span style={{ fontWeight: "700", color: "#2e7d32" }}>{appliedPromo}</span>
+                  <span style={{ fontSize: "0.85rem", color: "#4caf50", display: "block" }}>
+                    ₹{promoDiscount} discount applied!
+                  </span>
+                </div>
+                <button 
+                  onClick={handleRemovePromo}
+                  style={{ background: "none", border: "none", color: "#d32f2f", fontWeight: "600", cursor: "pointer" }}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div className="promocode-input-wrapper">
+                <input 
+                  type="text" 
+                  placeholder="Enter coupon code" 
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value)}
+                />
+                <button className="promocode-submit-btn" onClick={handleApplyPromo}>Apply</button>
+              </div>
+            )}
+            <div style={{ marginTop: "12px", fontSize: "0.82rem", color: "#666" }}>
+              💡 Try: <b style={{ cursor: "pointer", color: "#ff6b35" }} onClick={() => setPromoInput("FIRST40")}>FIRST40</b> (Free Delivery) or <b style={{ cursor: "pointer", color: "#ff6b35" }} onClick={() => setPromoInput("FIRST5")}>FIRST5</b> (₹40 Off + Free Delivery)
             </div>
           </div>
         </div>
